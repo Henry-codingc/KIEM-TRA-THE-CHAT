@@ -77,7 +77,6 @@
             <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-2xl flex justify-between items-center">
                 <div>
                     <h3 class="font-bold text-indigo-900" id="examTitleLabel">Bài Kiểm Tra Thể Chất</h3>
-                    <p class="text-xs text-indigo-700 mt-0.5">Hoàn thành các câu hỏi trắc nghiệm và đúng/sai dưới đây.</p>
                 </div>
                 <div class="text-right">
                     <span id="questionCountBadge" class="text-xs bg-indigo-600 text-white px-3 py-1 rounded-full font-bold">20 Câu Hỏi</span>
@@ -128,7 +127,7 @@
     </script>
 
     <script>
-        const EXAM_QUESTIONS = [
+        const RAW_QUESTIONS = [
             { id: 1, type: "choice", text: "Câu 1: Trong chế độ dinh dưỡng tập luyện thể dục thể thao, nhóm thực phẩm nào sau đây cung cấp nhiều chất đường bột (Carbohydrate) cho cơ thể?", options: ["A. Cơm, bánh mì, khoai, ngô.", "B. Nước lọc đóng chai.", "C. Muối ăn hằng ngày.", "D. Đá viên làm lạnh."], correct: 0 },
             { id: 2, type: "choice", text: "Câu 2: Thực phẩm nào dưới đây giàu chất đạm (Protein) giúp xây dựng và phát triển cơ bắp khi tập luyện thể dục thể thao?", options: ["A. Thịt, cá, trứng, sữa, đậu đỗ.", "B. Nước ngọt có ga.", "C. Kẹo cao su.", "D. Nước đá lạnh."], correct: 0 },
             { id: 3, type: "choice", text: "Câu 3: Để cung cấp nhiều vitamin và chất khoáng cho cơ thể khi tập luyện, hằng ngày em cần ăn nhóm thực phẩm nào?", options: ["A. Rau xanh và các loại quả chín.", "B. Kẹo mút nhiều màu sắc.", "C. Đồ ăn nhanh chiên nhiều dầu mỡ.", "D. Nước ngọt đóng lon."], correct: 0 },
@@ -152,6 +151,17 @@
         ];
 
         let currentStudent = { name: '', className: '', grade: '', period: '' };
+        let activeExamQuestions = []; // Lưu đề đã xáo trộn riêng cho học sinh này
+
+        // Hàm xáo trộn mảng (Fisher-Yates Shuffle)
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
 
         async function handleStudentLogin(e) {
             e.preventDefault();
@@ -191,6 +201,21 @@
             document.getElementById('examSection').classList.remove('hidden');
             document.getElementById('examTitleLabel').innerText = `ĐỀ KIỂM TRA THƯỜNG XUYÊN (LẦN 1) - KHỐI ${grade}`;
 
+            // XÁO TRỘN CÂU HỎI VÀ ĐÁP ÁN KHI HỌC SINH VÀO THI
+            activeExamQuestions = shuffleArray(RAW_QUESTIONS).map(q => {
+                let clonedQ = { ...q };
+                if (clonedQ.type === 'choice') {
+                    // Ghép options với index gốc để theo dõi đáp án đúng sau khi trộn
+                    let indexedOptions = clonedQ.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+                    let shuffledOptions = shuffleArray(indexedOptions);
+                    
+                    clonedQ.shuffledOptions = shuffledOptions;
+                    // Tìm vị trí mới của đáp án đúng
+                    clonedQ.newCorrectIndex = shuffledOptions.findIndex(item => item.originalIndex === clonedQ.correct);
+                }
+                return clonedQ;
+            });
+
             renderExamQuestions();
         }
 
@@ -198,25 +223,25 @@
             const container = document.getElementById('questionsContainer');
             container.innerHTML = '';
 
-            EXAM_QUESTIONS.forEach((q) => {
+            activeExamQuestions.forEach((q, index) => {
                 if (q.type === 'choice') {
-                    let optionsHtml = q.options.map((opt, oIdx) => `
+                    let optionsHtml = q.shuffledOptions.map((optObj, oIdx) => `
                         <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-xl cursor-pointer hover:bg-slate-100 transition">
                             <input type="radio" name="q_${q.id}" value="${oIdx}" class="w-4 h-4 text-indigo-600">
-                            <span class="text-sm text-slate-700">${opt}</span>
+                            <span class="text-sm text-slate-700">${optObj.text}</span>
                         </label>
                     `).join('');
 
                     container.innerHTML += `
                         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-                            <h4 class="font-bold text-slate-800 text-sm">${q.text}</h4>
+                            <h4 class="font-bold text-slate-800 text-sm">Câu ${index + 1}: ${q.text.replace(/^Câu \d+:\s*/, '')}</h4>
                             <div class="space-y-2">${optionsHtml}</div>
                         </div>
                     `;
                 } else if (q.type === 'true_false') {
                     container.innerHTML += `
                         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-                            <h4 class="font-bold text-slate-800 text-sm">${q.text}</h4>
+                            <h4 class="font-bold text-slate-800 text-sm">Câu ${index + 1}: ${q.text.replace(/^Câu \d+:\s*/, '')}</h4>
                             <div class="flex gap-4">
                                 <label class="flex items-center gap-2 p-3 bg-slate-50 border rounded-xl cursor-pointer hover:bg-slate-100 transition flex-1">
                                     <input type="radio" name="q_${q.id}" value="0" class="w-4 h-4 text-indigo-600">
@@ -238,16 +263,16 @@
             if (!confirm("Bạn có chắc chắn muốn nộp bài không?")) return;
 
             let correctCount = 0;
-            let totalQuestions = EXAM_QUESTIONS.length;
+            let totalQuestions = activeExamQuestions.length;
             let answersLog = [];
 
-            EXAM_QUESTIONS.forEach(q => {
+            activeExamQuestions.forEach(q => {
                 const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
                 const val = selected ? parseInt(selected.value) : -1;
                 let isCorrect = false;
 
                 if (q.type === 'choice') {
-                    isCorrect = (val === q.correct);
+                    isCorrect = (val === q.newCorrectIndex);
                 } else if (q.type === 'true_false') {
                     const correctVal = (q.correct === "Đúng" ? 0 : 1);
                     isCorrect = (val === correctVal);
@@ -255,8 +280,16 @@
 
                 if (isCorrect) correctCount++;
 
-                let studentAnsText = val !== -1 ? (q.type === 'choice' ? q.options[val] : (val === 0 ? "Đúng" : "Sai")) : "Không trả lời";
-                let correctAnsText = q.type === 'choice' ? q.options[q.correct] : q.correct;
+                let studentAnsText = "Không trả lời";
+                let correctAnsText = "";
+
+                if (q.type === 'choice') {
+                    studentAnsText = val !== -1 ? q.shuffledOptions[val].text : "Không trả lời";
+                    correctAnsText = q.shuffledOptions[q.newCorrectIndex].text;
+                } else {
+                    studentAnsText = val === 0 ? "Đúng" : (val === 1 ? "Sai" : "Không trả lời");
+                    correctAnsText = q.correct;
+                }
 
                 answersLog.push({
                     type: q.type,
