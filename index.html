@@ -128,7 +128,6 @@
     </script>
 
     <script>
-        // BỘ ĐỀ TẠM THỜI CHO KTTX LẦN 1 - KHỐI 6
         const EXAM_QUESTIONS = [
             { id: 1, type: "choice", text: "Câu 1: Trong chế độ dinh dưỡng tập luyện thể dục thể thao, nhóm thực phẩm nào sau đây cung cấp nhiều chất đường bột (Carbohydrate) cho cơ thể?", options: ["A. Cơm, bánh mì, khoai, ngô.", "B. Nước lọc đóng chai.", "C. Muối ăn hằng ngày.", "D. Đá viên làm lạnh."], correct: 0 },
             { id: 2, type: "choice", text: "Câu 2: Thực phẩm nào dưới đây giàu chất đạm (Protein) giúp xây dựng và phát triển cơ bắp khi tập luyện thể dục thể thao?", options: ["A. Thịt, cá, trứng, sữa, đậu đỗ.", "B. Nước ngọt có ga.", "C. Kẹo cao su.", "D. Nước đá lạnh."], correct: 0 },
@@ -166,11 +165,10 @@
                 return;
             }
 
-            // Kiểm tra trạng thái từ Firestore xem giáo viên đã mở đúng Khối + Đợt này chưa
             try {
                 const statusSnap = await window.fsTools.getDoc(window.fsTools.doc(window.db, "config", "exam_status"));
                 if (!statusSnap.exists() || !statusSnap.data().isOpen) {
-                    alert("Kỳ thi này hiện đang bị ĐÓNG bởi giáo viên. Bạn chưa thể vào làm bài!");
+                    alert("Kỳ thi hiện đang bị ĐÓNG bởi giáo viên. Bạn chưa thể vào làm bài!");
                     return;
                 }
                 const serverGrade = statusSnap.data().grade || "6";
