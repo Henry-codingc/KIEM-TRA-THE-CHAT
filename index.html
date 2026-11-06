@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học Sinh - Kiểm Tra Thể Chất</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
+    <header class="bg-indigo-700 text-white shadow-md">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2.5 rounded-xl"><i class="fa-solid fa-graduation-cap text-2xl"></i></div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Cổng Kiểm Tra Thể Chất</h1>
+                    <p class="text-xs text-indigo-200">Môn Giáo Dục Thể Chất - Trực Tuyến</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div id="examTimerDisplay" class="hidden text-xs bg-rose-600 text-white px-3 py-1.5 rounded-lg font-bold animate-pulse">
+                    <i class="fa-regular fa-clock"></i> Còn lại: <span id="timerCountdown">45:00</span>
+                </div>
+                <div id="studentInfoDisplay" class="hidden text-xs bg-indigo-800 px-3 py-1.5 rounded-lg font-bold"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <!-- KHU VỰC ĐĂNG NHẬP -->
+        <section id="loginSection" class="bg-white rounded-2xl shadow-md p-8 border max-w-md mx-auto space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="text-xl font-bold text-slate-800">Đăng Nhập Làm Bài</h2>
+                <p class="text-xs text-slate-500">Chọn khối và đợt thi theo thông báo của giáo viên</p>
+            </div>
+            
+            <div id="examNotice" class="p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl text-center font-semibold">
+                Đang kiểm tra trạng thái kỳ thi...
+            </div>
+
+            <form id="loginForm" onsubmit="handleStudentLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Chọn Khối *</label>
+                    <select id="studentGradeSelect" onchange="updatePeriodOptions()" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                        <option value="">-- Chọn Khối Lớp --</option>
+                        <option value="6">Khối 6</option>
+                        <option value="7">Khối 7</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Chọn Đợt Thi *</label>
+                    <select id="studentPeriodSelect" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                        <option value="">-- Vui lòng chọn Khối trước --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Họ và Tên *</label>
+                    <input type="text" id="studentNameInput" required placeholder="Ví dụ: Nguyễn Văn An" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Lớp *</label>
+                    <input type="text" id="studentClassInput" required placeholder="Ví dụ: 6A1" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <button type="submit" id="btnLoginSubmit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm transition cursor-pointer">
+                    Vào Phòng Thi
+                </button>
+            </form>
+        </section>
+
+        <!-- KHU VỰC LÀM BÀI THI -->
+        <section id="examSection" class="hidden space-y-6">
+            <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-2xl flex justify-between items-center">
+                <div>
+                    <h3 class="font-bold text-indigo-900" id="examTitleLabel">Bài Kiểm Tra Thể Chất</h3>
+                    <p class="text-xs text-indigo-700 mt-0.5">Thời gian làm bài giới hạn trong vòng 45 phút kể từ lúc mở đề.</p>
+                </div>
+                <div class="text-right">
+                    <span id="questionCountBadge" class="text-xs bg-indigo-600 text-white px-3 py-1 rounded-full font-bold">20 Câu Hỏi</span>
+                </div>
+            </div>
+
+            <form id="examForm" onsubmit="submitExam(event)" class="space-y-6">
+                <div id="questionsContainer" class="space-y-6"></div>
+                <div class="text-center pt-4">
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3.5 rounded-xl text-base shadow-lg transition">
+                        Nộp Bài Kiểm Tra Ngay
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- KHU VỰC KẾT QUẢ -->
+        <section id="resultSection" class="hidden bg-white rounded-2xl shadow-md p-8 border max-w-lg mx-auto text-center space-y-4">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h2 class="text-xl font-bold text-slate-800">Nộp Bài Thành Công!</h2>
+            <p class="text-sm text-slate-600">Hệ thống đã tự động chấm điểm bài làm của bạn:</p>
+            <div class="p-4 bg-slate-50 rounded-xl text-center space-y-1">
+                Điểm tổng kết: <b id="resTotal" class="text-indigo-700 text-xl block">0 đ</b>
+                <p class="text-xs text-slate-500 pt-1" id="resTimeLog"></p>
+            </div>
+            <button onclick="location.reload()" class="bg-indigo-600 text-white px-6 py-2 rounded-xl text-sm font-semibold">Quay Lại Trang Chủ</button>
+        </section>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, getDoc, doc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBe4ehs7teJcj2rq3DruF6zIginmBal_Wk",
+            authDomain: "kiem-tra-the-chat.firebaseapp.com",
+            projectId: "kiem-tra-the-chat",
+            storageBucket: "kiem-tra-the-chat.firebasestorage.app",
+            messagingSenderId: "585367267362",
+            appId: "1:585367267362:web:974b579f400e3f3074427b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.db = db;
+        window.fsTools = { getDoc, doc, addDoc, collection };
+    </script>
+
+    <script>
+        const EXAM_DATA = {
+            "6": {
+                "KTTX Lần 1": [
+                    { id: 1, type: "choice", text: "Câu 1: Trong chế độ dinh dưỡng tập luyện thể dục thể thao, nhóm thực phẩm nào sau đây cung cấp nhiều chất đường bột (Carbohydrate) cho cơ thể?", options: ["A. Cơm, bánh mì, khoai, ngô.", "B. Nước lọc đóng chai.", "C. Muối ăn hằng ngày.", "D. Đá viên làm lạnh."], correct: 0 },
+                    { id: 2, type: "choice", text: "Câu 2: Thực phẩm nào dưới đây giàu chất đạm (Protein) giúp xây dựng và phát triển cơ bắp khi tập luyện thể dục thể thao?", options: ["A. Thịt, cá, trứng, sữa, đậu đỗ.", "B. Nước ngọt có ga.", "C. Kẹo cao su.", "D. Nước đá lạnh."], correct: 0 },
+                    { id: 3, type: "choice", text: "Câu 3: Để cung cấp nhiều vitamin và chất khoáng cho cơ thể khi tập luyện, hằng ngày em cần ăn nhóm thực phẩm nào?", options: ["A. Rau xanh và các loại quả chín.", "B. Kẹo mút nhiều màu sắc.", "C. Đồ ăn nhanh chiên nhiều dầu mỡ.", "D. Nước ngọt đóng lon."], correct: 0 },
+                    { id: 4, type: "choice", text: "Câu 4: Vì sao nước là yếu tố dinh dưỡng đặc biệt quan trọng đối với người tập luyện thể dục thể thao?", options: ["A. Vì nước giúp bù lại lượng mồ hôi đã mất, điều hòa thân nhiệt và giúp cơ thể không bị mệt lả.", "B. Vì uống nước giúp học sinh không cần phải ăn cơm hay thức ăn trong cả tuần.", "C. Vì nước giúp cơ thể nặng hơn để đứng yên một chỗ không phải vận động.", "D. Vì uống nước giúp thay thế hoàn toàn việc khởi động khớp trước khi tập."], correct: 0 },
+                    { id: 5, type: "choice", text: "Câu 5: Điều gì sẽ xảy ra với cơ thể nếu học sinh nhịn ăn sáng và để bụng đói khi tham gia giờ học Giáo dục thể chất?", options: ["A. Cơ thể bị thiếu năng lượng, dễ bị mệt mỏi, hoa mắt, chóng mặt và tập luyện kém hiệu quả.", "B. Cơ thể sẽ có nhiều sức mạnh hơn và chạy nhanh hơn bình thường.", "C. Cơ bắp sẽ phát triển to khỏe ngay lập tức mà không cần tập luyện.", "D. Cơ thể không bao giờ bị khát nước trong suốt buổi học."], correct: 0 },
+                    { id: 6, type: "choice", text: "Câu 6: Theo điều luật cơ bản trong chạy cự li ngắn, người chạy chỉ được phép rời khỏi vị trí xuất phát để bắt đầu chạy khi nào?", options: ["A. Khi có hiệu lệnh “Chạy!\" (hoặc tiếng còi, cờ lệnh) của người điều khiển.", "B. Khi mới nghe khẩu lệnh \"Vào chỗ!\".", "C. Khi tự ý thích chạy lúc nào thì chạy trước các bạn.", "D. Khi trọng tài còn đang kiểm tra danh sách ở bàn."], correct: 0 },
+                    { id: 7, type: "choice", text: "Câu 7: Trong giờ học Chạy cự li ngắn lớp 6, trò chơi vận động nào dưới đây thường được sử dụng để rèn luyện và phát triển sức nhanh?", options: ["A. Trò chơi \"Chạy tiếp sức\" (hoặc \"Chạy đuổi\").", "B. Trò chơi \"Đứng yên một chân nhắm mắt ngủ\".", "C. Trò chơi \"Ngồi đánh cờ vua trong lớp\".", "D. Trò chơi \"Nằm im đọc truyện tranh\"."], correct: 0 },
+                    { id: 8, type: "choice", text: "Câu 8: Kĩ thuật chạy cự li ngắn (60m) ở lớp 6 bao gồm mấy giai đoạn theo đúng thứ tự từ lúc bắt đầu đến lúc kết thúc?", options: ["A. 4 giai đoạn: Xuất phát - Chạy lao sau xuất phát - Chạy giữa quãng – Về đích.", "B. 2 giai đoạn: Đứng nhìn đường chạy – Đi bộ về chỗ ngồi.", "C. 3 giai đoạn: Chạy về đích – Chạy giữa quãng – Xuất phát.", "D. 1 giai đoạn duy nhất là Đứng yên tại vạch đích."], correct: 0 },
+                    { id: 9, type: "choice", text: "Câu 9: Trong giờ học Giáo dục thể chất lớp 6, các hình thức tổ chức tập luyện kĩ thuật chạy cự li ngắn thường gồm những hình thức nào?", options: ["A. Tập luyện cá nhân, tập luyện theo cặp/nhóm (tổ) và tập luyện cả lớp.", "B. Chỉ có hình thức ngồi xem tivi ở nhà.", "C. Chỉ có hình thức thi đấu giải vô địch quốc gia.", "D. Chỉ có hình thức làm bài kiểm tra viết trên giấy."], correct: 0 },
+                    { id: 10, type: "choice", text: "Câu 10: Khi điều khiển tổ, nhóm tập luyện kĩ thuật xuất phát cao, người chỉ huy cần hô lần lượt 3 khẩu lệnh nào theo đúng thứ tự?", options: ["A. \"Vào chỗ!\" – \"Sẵn sàng!\" - \"Chạy!\".", "B. \"Chạy!\" - \"Vào chỗ!\" - \"Nghỉ!\".", "C. \"Nằm xuống!\" – \"Ngồi dậy!\" – \"Đi bộ!\".", "D. \"Nhắm mắt!\" - \"Quay sau!\" - \"Đứng lại!\"."], correct: 0 },
+                    { id: 11, type: "choice", text: "Câu 11: Trong kĩ thuật chạy cự li ngắn 60m, giai đoạn \"Chạy lao sau xuất phát\" có vai trò chính là gì?", options: ["A. Giúp người chạy nhanh chóng tăng tốc độ từ vị trí xuất phát để chuyển vào chạy giữa quãng.", "B. Giúp người chạy dừng hẳn lại tại vạch xuất phát để buộc lại dây giày.", "C. Giúp người chạy đi bộ chậm rãi để nghỉ mệt ngay khi vừa rời vạch xuất phát.", "D. Giúp người chạy quay lưng chạy ngược về phía sau vạch xuất phát."], correct: 0 },
+                    { id: 12, type: "choice", text: "Câu 12: Khi thực hiện động tác bổ trợ “Chạy bước nhỏ\", bàn chân của người tập tiếp xúc với mặt đất như thế nào là đúng kĩ thuật?", options: ["A. Tiếp đất bằng nửa trước bàn chân, cổ chân linh hoạt, bước chân ngắn và nhanh.", "B. Tiếp đất mạnh bằng cả gót chân và giữ thẳng cứng hai đầu gối.", "C. Nhảy chụm cả hai chân cùng một lúc như nhảy bao bố.", "D. Ngồi xổm dưới đất và lết hai bàn chân đi tới."], correct: 0 },
+                    { id: 13, type: "choice", text: "Câu 13: Động tác bổ trợ nào có đặc điểm: \"Chân sau đạp duỗi thẳng hoàn toàn, đùi chân trước nâng cao đưa ra trước, thân trên hơi ngả về trước, hai tay đánh phối hợp tự nhiên\"?", options: ["A. Động tác Chạy đạp sau.", "B. Động tác Đứng nghiêm chào cờ.", "C. Động tác Ngồi gập thân tại chỗ.", "D. Động tác Xoay cổ tay cổ chân."], correct: 0 },
+                    { id: 14, type: "choice", text: "Câu 14: Khi quan sát bạn thực hiện giai đoạn “Chạy giữa quãng\", nếu thấy bạn mắc lỗi \"đánh hai tay vung ngang bắt chéo trước ngực\", em cần nhắc bạn sửa sai như thế nào?", options: ["A. Gập khuỷu tay vừa phải và đánh tay nhịp nhàng theo hướng trước sau phối hợp với bước chân.", "B. Buộc chặt hai tay vào sát hai bên đùi không cho cử động khi chạy.", "C. Giơ thẳng cả hai tay lên cao quá đầu trong suốt quãng đường chạy.", "D. Chắp hai tay ra sau lưng giống như đang đi dạo."], correct: 0 },
+                    { id: 15, type: "choice", text: "Câu 15: Để đảm bảo an toàn và phòng tránh chấn thương trước khi bước vào tập luyện Chạy cự li ngắn, học sinh bắt buộc phải làm việc gì đầu tiên?", options: ["A. Khởi động kĩ các khớp (cổ tay, cổ chân, gối, hông, vai...) và làm nóng cơ thể.", "B. Chạy hết sức thật nhanh ngay khi vừa bước ra sân mà không cần khởi động.", "C. Tháo giày thể thao ra và đi dép lê trơn trượt để chạy.", "D. Đứng chen lấn, xô đẩy các bạn trên đường chạy."], correct: 0 },
+                    { id: 16, type: "true_false", text: "Câu 16: Theo điều luật cơ bản trong chạy cự li ngắn, mỗi người chạy phải chạy đúng trong ô (làn) đường chạy của mình, không được lấn sang đường chạy để cản trở hay xô đẩy người bên cạnh.", correct: "Đúng" },
+                    { id: 17, type: "true_false", text: "Câu 17: Ở chương trình Giáo dục thể chất lớp 6 (sách Kết nối tri thức), trong giai đoạn Xuất phát của chạy cự li ngắn 60m, học sinh được học kĩ thuật Xuất phát cao.", correct: "Đúng" },
+                    { id: 18, type: "true_false", text: "Câu 18: Trong kĩ thuật chạy cự li ngắn 60m, vai trò của giai đoạn Chạy giữa quãng là giúp người chạy dừng hẳn lại giữa đường để ngồi nghỉ uống nước.", correct: "Sai" },
+                    { id: 19, type: "true_false", text: "Câu 19: Khi thực hiện kĩ thuật Xuất phát cao ở khẩu lệnh 'Vào chỗ!', nếu học sinh đặt cả hai chân giẫm đè lên trên vạch xuất phát là sai quy định, cần điều chỉnh lùi mũi chân trước về sát mép sau của vạch xuất phát.", correct: "Đúng" },
+                    { id: 20, type: "true_false", text: "Câu 20: Để đảm bảo an toàn trong giai đoạn Về đích chạy 60m, ngay khi ngực vừa chạm qua vạch đích, người chạy phải đứng khựng lại đột ngột hoặc ngồi thụp ngay xuống vạch đích.", correct: "Sai" }
+                ],
+                "KTTX Lần 2": [
+                    { id: 1, type: "choice", text: "Câu 1: Theo mục 2 và Hình 2 (trang 5 SGK), chất béo (lipid) có trong những nguồn thực phẩm nào sau đây?", options: ["A. Gạo, bột mì, khoai và các loại củ.", "B. Mỡ động vật và dầu thực vật.", "C. Sò, thịt đỏ, trứng và các loại rau xanh.", "D. Nước khoáng và muối iốt."], correct: 1 },
+                    { id: 2, type: "choice", text: "Câu 2: Theo mục 2 (trang 6 SGK), loại vitamin nào có nhiều trong rau quả (đặc biệt là rau ngót), khác với loại vitamin có trong thực phẩm gốc thực vật như dầu đậu nành, dầu hướng dương, dầu vừng?", options: ["A. Rau quả (rau ngót) có nhiều vitamin D; còn dầu đậu nành có vitamin A", "B. Rau quả (rau ngót) có nhiều vitamin B12; còn dầu đậu nành có vitamin C", "C. Rau quả (rau ngót) có nhiều vitamin C; còn dầu đậu nành, dầu hướng dương, dầu vừng có nhiều vitamin E.", "D. Rau quả (rau ngót) có nhiều vitamin E; còn dầu đậu nành có vitamin K."], correct: 2 },
+                    { id: 3, type: "choice", text: "Câu 3: Theo mục 2 (trang 6 SGK), khoáng chất canxi và phốt pho cần được cung cấp đều đặn từ nhóm thức ăn hằng ngày nào dưới đây?", options: ["A. Các loại củ cải, cải bắp, cải bông và các loại rau có lá lớn.", "B. Gạo, bột mì, khoai và các loại củ.", "C. Dầu đậu nành, dầu hướng dương và dầu vừng.", "D. Các sản phẩm từ sữa, tôm, cua, cá."], correct: 3 },
+                    { id: 4, type: "choice", text: "Câu 4: Theo mục 2 (trang 5, 6 SGK), vì sao trong chế độ ăn uống hằng ngày của người tập luyện TDTT cần cung cấp đầy đủ các chất dinh dưỡng thiết yếu kết hợp uống đủ nước?", options: ["A. Vì dinh dưỡng cung cấp năng lượng và nguyên liệu tạo tế bào; nước giúp điều hòa thân nhiệt.", "B. Vì giúp học sinh không cần vận động mà vẫn phát triển thể chất.", "C. Vì giúp cơ thể hoàn toàn không tiết ra mồ hôi.", "D. Vì các chất dinh dưỡng tự tổng hợp từ ánh nắng mặt trời."], correct: 0 },
+                    { id: 5, type: "choice", text: "Câu 5: Trong chủ đề Ném bóng, kĩ thuật cầm ném bóng đúng cách đòi hỏi ngón tay và lòng bàn tay như thế nào?", options: ["A. Đặt bóng tiếp xúc với các ngón tay và phần trên của lòng bàn tay, ngón tay mở tự nhiên.", "B. Cầm chặt bóng hoàn toàn bằng các đầu ngón tay không chạm lòng bàn tay.", "C. Kẹp bóng giữa hai nách.", "D. Ôm sát bóng bằng cả hai tay sau lưng."], correct: 0 },
+                    { id: 6, type: "choice", text: "Câu 6: Trong tư thế chuẩn bị ném bóng bằng một tay trên vai, trọng tâm cơ thể thường dồn vào đâu?", options: ["A. Chân trước.", "B. Chân sau (chân cùng bên với tay ném).", "C. Cả hai tay giơ cao trên đầu.", "D. Nghiêng hẳn sang bên trái."], correct: 1 },
+                    { id: 7, type: "choice", text: "Câu 7: Khi thực hiện động tác ra sức cuối cùng trong ném bóng, hướng vung tay ném bóng đi như thế nào là chính xác?", options: ["A. Vung tay từ dưới thấp lên cao theo hướng vuông góc mặt đất.", "B. Đưa tay vòng ra sau lưng rồi ném ngược về phía khán giả.", "C. Đưa tay từ sau ra trước - lên cao qua vai, cổ tay gập đẩy bóng đi.", "D. Ném bóng đập thẳng xuống đất ngay trước mũi bàn chân."], correct: 2 },
+                    { id: 8, type: "choice", text: "Câu 8: Trò chơi vận động nào dưới đây thường được sử dụng để bổ trợ cho kĩ thuật ném bóng?", options: ["A. Trò chơi Ném bóng trúng đích hoặc Ném bóng xa tiếp sức.", "B. Trò chơi Bịt mắt bắt dê.", "C. Trò chơi Nhảy lò cò một chân.", "D. Trò chơi Kéo co đồng đội."], correct: 0 },
+                    { id: 9, type: "choice", text: "Câu 9: Khi tập luyện ném bóng xa, yếu tố nào quyết định lớn nhất đến tầm bay của quả bóng?", options: ["A. Tốc độ ra tay và góc độ ném bóng hợp lí lúc rời tay.", "B. Mặc trang phục thật dày và đi giày bốt nặng.", "C. Nhắm tịt mắt khi vung tay ném.", "D. Hô thật to trước khi ném."], correct: 0 },
+                    { id: 10, type: "choice", text: "Câu 10: Lỗi phổ biến nào học sinh thường mắc phải khi thực hiện động tác ném bóng bằng một tay trên vai?", options: ["A. Không phối hợp đạp chân và xoay hông, chỉ dùng sức của cánh tay đơn thuần.", "B. Giữ thẳng khuỷu tay tuyệt đối trong suốt quá trình ném.", "C. Ném bóng bay ngược về phía sau lưng.", "D. Đứng hoàn toàn bằng một chân nhắm mắt."], correct: 0 },
+                    { id: 11, type: "choice", text: "Câu 11: Để đảm bảo an toàn khi học tập môn Ném bóng trên sân trường, học sinh cần tuân thủ quy định nào sau đây?", options: ["A. Chỉ nhặt bóng và ném bóng theo lệnh của giáo viên, tuyệt đối không đứng phía trước hướng ném của bạn.", "B. Tự ý ném bóng bất cứ lúc nào khi các bạn đang đứng nhặt bóng.", "C. Thi nhau ném bóng thật mạnh về phía đông người qua lại.", "D. Dùng bóng đá thay cho bóng ném."], correct: 0 },
+                    { id: 12, type: "choice", text: "Câu 12: Trong kĩ thuật ném bóng, giai đoạn nào đóng vai trò tạo đà và tích lũy lực trước khi vung tay ném chính thức?", options: ["A. Giai đoạn chuẩn bị và đà chạy đà (hoặc bước đà).", "B. Giai đoạn đứng ngắm mây trời sau khi ném.", "C. Giai đoạn ngồi nghỉ mệt dưới gốc cây.", "D. Giai đoạn đi nhặt bóng về vị trí xuất phát."], correct: 0 },
+                    { id: 13, type: "choice", text: "Câu 13: Khi thực hiện động tác đà chạy trong ném bóng xa, bước chạy cuối cùng trước khi ra sức có đặc điểm gì?", options: ["A. Bước dài hơn để chuyển trọng tâm và chuẩn bị tư thế ra sức cuối cùng.", "B. Dừng lại hẳn chạy tại chỗ 5 giây rồi mới ném.", "C. Nhảy lùi về sau 3 bước.", "D. Ngồi thụp xuống đất rồi ném."], correct: 0 },
+                    { id: 14, type: "choice", text: "Câu 14: Sau khi ném bóng đi, người tập cần thực hiện động tác giữ thăng bằng cơ thể như thế nào?", options: ["A. Bước tiếp một bước chân lên trước để giảm đà lao và duy trì thăng bằng, tránh bị ngã.", "B. Cố tình ngã nhào người về phía trước hoặc ngã ngửa ra sau.", "C. Đứng bất động một chỗ không cử động.", "D. Quay lưng chạy ngược lại ngay lập tức."], correct: 0 },
+                    { id: 15, type: "choice", text: "Câu 15: Tại sao học sinh hạn chế vận động hoặc khuyết tật nhẹ vẫn có thể tham gia học tập chủ đề Ném bóng bằng hình thức phù hợp?", options: ["A. Có thể thực hiện ném bóng ở cự ly gần, ném trúng đích cố định hoặc làm trọng tài/quan sát ghi nhận thành tích.", "B. Bắt buộc phải tham gia thi đấu cường độ cao như VĐV chuyên nghiệp.", "C. Tuyệt đối không được ra sân tập mà phải ngồi trong phòng.", "D. Chỉ làm bài tập viết trên giấy ở nhà."], correct: 0 },
+                    { id: 16, type: "true_false", text: "Câu 16: Trong kĩ thuật ném bóng bằng một tay trên vai, khi chuẩn bị ném, bàn tay cầm bóng đưa lên cao và ra sau sao cho cổ tay hơi ngửa, bóng nằm chắc chắn trong lòng bàn tay và các ngón tay.", correct: "Đúng" },
+                    { id: 17, type: "true_false", text: "Câu 17: Khi ném bóng, học sinh được phép vượt qua vạch giới hạn ném bóng miễn là ném được quả bóng đi thật xa.", correct: "Sai" },
+                    { id: 18, type: "true_false", text: "Câu 18: Việc duy trì bổ sung nước và các chất dinh dưỡng hợp lý giúp học sinh phục hồi năng lượng nhanh chóng sau giờ học ném bóng.", correct: "Đúng" },
+                    { id: 19, type: "true_false", text: "Câu 19: Trong giờ học ném bóng, học sinh có thể tự do ném bóng bất cứ lúc nào khi chưa có hiệu lệnh của giáo viên để tiết kiệm thời gian.", correct: "Sai" },
+                    { id: 20, type: "true_false", text: "Câu 20: Động tác ra sức cuối cùng trong ném bóng đòi hỏi sự phối hợp nhịp nhàng giữa đạp chân, xoay hông, vươn thân và vụt cẳng tay - cổ tay để đạt hiệu suất cao nhất.", correct: "Đúng" }
+                ],
+                "KTTX Lần 3": [
+                    { id: 1, type: "choice", text: "Câu 1: Chủ đề chính tiếp theo trong chương trình GDTC Lớp 6 sau phần Chạy cự li ngắn và Ném bóng thường là gì?", options: ["A. Bài thể dục phát triển chung hoặc các động tác thể dục nhịp điệu.", "B. Môn Đua xe đạp lòng chảo.", "C. Môn Nhảy dù nghệ thuật.", "D. Môn Lướt ván trên sóng biển."], correct: 0 },
+                    { id: 2, type: "choice", text: "Câu 2: Khi thực hiện bài thể dục phát triển chung, tư thế chuẩn bị của nhịp đầu tiên thường là gì?", options: ["A. Tư thế đứng nghiêm.", "B. Tư thế nằm sấp chống đẩy.", "C. Tư thế ngồi xổm khoanh tay.", "D. Tư thế chạy bước nhỏ tại chỗ."], correct: 0 },
+                    { id: 3, type: "choice", text: "Câu 3: Mục đích chính của việc tập luyện bài thể dục phát triển chung vào đầu giờ học là gì?", options: ["A. Góp phần giáo dục tư thế đúng, phát triển các tố chất thể lực và làm nóng cơ thể.", "B. Giúp học sinh buồn ngủ và nghỉ ngơi.", "C. Thay thế hoàn toàn bữa ăn sáng hằng ngày.", "D. Giúp cơ thể nặng hơn để đứng vững trước gió lớn."], correct: 0 },
+                    { id: 4, type: "choice", text: "Câu 4: Trong các động tác tay của bài thể dục, khi thực hiện nhịp đưa hai tay sang ngang, lòng bàn tay hướng như thế nào là đúng?", options: ["A. Lòng bàn tay úp xuống dưới.", "B. Lòng bàn tay ngửa lên trời.", "C. Nắm chặt thành đấm tay.", "D. Đan chéo hai tay trước mặt."], correct: 0 },
+                    { id: 5, type: "choice", text: "Câu 5: Khi thực hiện động tác vặn mình trong bài thể dục, phần thân trên và chân phối hợp thế nào?", options: ["A. Thân quay sang trái/phải, kết hợp kiễng gót chân bên đối diện.", "B. Hai chân giữ nguyên, xoay cổ vòng tròn mạnh.", "C. Ngồi bệt xuống đất và quay lưng về sau.", "D. Nhảy lò cò liên tục theo hình số 8."], correct: 0 },
+                    { id: 6, type: "choice", text: "Câu 6: Dinh dưỡng hợp lý trong giai đoạn tập luyện thể dục thể thao giúp cơ thể tránh tình trạng gì?", options: ["A. Suy nhược cơ thể, mệt mỏi và chuột rút do thiếu chất.", "B. Tăng trưởng chiều cao quá mức trong một đêm.", "C. Mất khả năng nhìn thấy màu sắc tạm thời.", "D. Buồn ngủ trong suốt các môn học văn hóa."], correct: 0 },
+                    { id: 7, type: "choice", text: "Câu 7: Thực phẩm nào dưới đây chứa nhiều chất khoáng sắt giúp tạo máu và phòng chống thiếu máu khi vận động nhiều?", options: ["A. Thịt bò, gan động vật, rau dền, mộc nhĩ.", "B. Nước ngọt đóng chai có ga.", "C. Kẹo dẻo hương trái cây.", "D. Đá viên làm từ nước máy."], correct: 0 },
+                    { id: 8, type: "choice", text: "Câu 8: Tại sao trước khi thực hiện bài thể dục hoặc vận động mạnh, học sinh không nên ăn quá no?", options: ["A. Tránh gây tức bụng, đau dạ dày và ảnh hưởng đến hô hấp, tuần hoàn máu khi vận động.", "B. Vì ăn no sẽ làm học sinh chạy nhanh hơn đối thủ.", "C. Vì nhà trường không cho phép mang đồ ăn ra sân trường.", "D. Vì thức ăn sẽ bay ra ngoài khi nhảy cao."], correct: 0 },
+                    { id: 9, type: "choice", text: "Câu 9: Khi tập luyện động tác gập thân trong bài thể dục, lưng cần giữ thế nào?", options: ["A. Cố gắng giữ lưng tương đối thẳng, gập từ vùng hông để bảo vệ cột sống.", "B. Uốn cong tròn lưng thành hình quả bóng.", "C. Nằm ngửa hẳn xuống nền sân cứng.", "D. Ngước cổ nhìn thẳng lên trời cao."], correct: 0 },
+                    { id: 10, type: "choice", text: "Câu 10: Ý nghĩa của việc đồng bộ nhịp điệu khi tập luyện thể dục tập thể là gì?", options: ["A. Rèn luyện tính kỷ luật, sự phối hợp nhịp nhàng và tinh thần đoàn kết trong tập thể lớp.", "B. Để gây tiếng ồn lớn làm ảnh hưởng lớp khác.", "C. Để ai muốn tập nhanh chậm tùy ý.", "D. Không có ý nghĩa gì đặc biệt."], correct: 0 },
+                    { id: 11, type: "choice", text: "Câu 11: Nhóm thực phẩm nào cung cấp năng lượng chủ yếu cho não bộ và cơ bắp hoạt động tức thời trong giờ học thể chất?", options: ["A. Nhóm giàu chất bột đường (cơm, bún, phở, bánh mì).", "B. Nhóm chỉ chứa nước lọc tinh khiết.", "C. Nhóm muối ăn tinh luyện.", "D. Nhóm đá lạnh giải khát."], correct: 0 },
+                    { id: 12, type: "choice", text: "Câu 12: Biểu hiện nào cho thấy cơ thể học sinh đang bị thiếu nước trong giờ học thể chất ngoài trời nắng?", options: ["A. Khô miệng, khát nước nhiều, chóng mặt hoặc nước tiểu có màu sẫm.", "B. Cơ thể tỏa sáng và cảm thấy cực kỳ sung sức.", "C. Tóc mọc nhanh hơn bình thường.", "D. Cười lớn liên tục không ngừng."], correct: 0 },
+                    { id: 13, type: "choice", text: "Câu 13: Động tác lườn trong bài thể dục phát triển chung có tác dụng chính lên vùng cơ nào?", options: ["A. Các nhóm cơ hai bên sườn và tăng độ linh hoạt cột sống.", "B. Cơ ngón chân cái và cổ tay.", "C. Cơ mí mắt và cơ tai.", "D. Cơ hàm để nhai thức ăn."], correct: 0 },
+                    { id: 14, type: "choice", text: "Câu 14: Sau buổi tập thể dục nhịp điệu hoặc bài thể dục, trạng thái thả lỏng cơ thể giúp ích gì?", options: ["A. Đưa nhịp tim và huyết áp về trạng thái bình thường từ từ, giảm đau nhức cơ bắp.", "B. Làm nhịp tim đập nhanh gấp ba lần lúc tập.", "C. Khiến cơ thể bị co cứng vĩnh viễn.", "D. Ngăn cản quá trình trao đổi chất."], correct: 0 },
+                    { id: 15, type: "choice", text: "Câu 15: Học sinh khuyết tật hoặc hạn chế vận động có thể tham gia học tập bài thể dục bằng cách nào?", options: ["A. Thực hiện các động tác tay chân phù hợp với khả năng hoặc quan sát, đếm nhịp hỗ trợ bạn.", "B. Bắt buộc phải thực hiện các động tác nhào lộn khó.", "C. Ngồi ngủ trong lớp học văn hóa.", "D. Chạy 5 vòng sân trường với tốc độ cao."], correct: 0 },
+                    { id: 16, type: "true_false", text: "Câu 16: Tập luyện bài thể dục phát triển chung đều đặn mỗi sáng giúp cải thiện tư thế và tăng cường sức khỏe toàn diện cho học sinh lớp 6.", correct: "Đúng" },
+                    { id: 17, type: "true_false", text: "Câu 17: Trong khi thực hiện động tác vặn mình, học sinh được phép xoắn đột ngột cột sống với lực rất mạnh để kêu xương.", correct: "Sai" },
+                    { id: 18, type: "true_false", text: "Câu 18: Nước đóng vai trò quan trọng trong việc điều hòa thân nhiệt, đặc biệt khi vận động thể lực ra nhiều mồ hôi.", correct: "Đúng" },
+                    { id: 19, type: "true_false", text: "Câu 19: Học sinh có thể uống nước đá lạnh hoặc nước ngọt có ga vô độ ngay khi vừa chạy mệt hổn hển mà không cần nghỉ ngơi.", correct: "Sai" },
+                    { id: 20, type: "true_false", text: "Câu 20: Việc hít thở đều đặn, sâu và đúng nhịp trong các động tác thể dục giúp tăng lượng oxy cung cấp cho cơ thể hoạt động hiệu quả.", correct: "Đúng" }
+                ],
+                "KTTX Lần 4": [
+                    { id: 1, type: "choice", text: "Câu 1: Nội dung ôn tập và kiểm tra thường xuyên lần 4 của môn GDTC Lớp 6 thường tập trung vào nội dung nào?", options: ["A. Tổng hợp kiến thức kĩ thuật Chạy cự li ngắn, Ném bóng và Dinh dưỡng cơ bản.", "B. Môn Đua thuyền truyền thống.", "C. Môn Cử tạ hạng nặng.", "D. Môn Golf chuyên nghiệp."], correct: 0 },
+                    { id: 2, type: "choice", text: "Câu 2: Trong các tố chất thể lực cơ bản được rèn luyện ở lứa tuổi học sinh trung học cơ sở, tố chất nào thể hiện qua bài chạy 60m?", options: ["A. Tố chất sức nhanh.", "B. Tố chất sức bền dẻo dai nhiều giờ.", "C. Tố chất bơi lội nghệ thuật.", "D. Tố chất bắn súng thể thao."], correct: 0 },
+                    { id: 3, type: "choice", text: "Câu 3: Yếu tố nào sau đây giúp phòng tránh nguy cơ bị chuột rút (co cứng cơ) khi tham gia thi đấu thể thao?", options: ["A. Khởi động kĩ, bù nước và khoáng chất đầy đủ trước và sau khi tập.", "B. Uống thật nhiều nước ngọt có ga ngay trước giờ thi đấu.", "C. Nhịn ăn uống suốt cả ngày để cơ thể nhẹ nhất.", "D. Mặc áo mưa kín để ra thật nhiều mồ hôi."], correct: 0 },
+                    { id: 4, type: "choice", text: "Câu 4: Khi thực hiện động tác xuất phát cao trong chạy 60m, tư thế của trọng tâm cơ thể như thế nào là tối ưu?", options: ["A. Hơi ngả về trước để dễ dàng lao nhanh khi có hiệu lệnh.", "B. Ngả hẳn ra phía sau giống như đang ngắm cảnh.", "C. Ngồi bệt hẳn xuống vạch xuất phát.", "D. Đứng thẳng cứng nhắc như tượng binh lính."], correct: 0 },
+                    { id: 5, type: "choice", text: "Câu 5: Trong ném bóng xa, nếu người tập vung tay quá thấp (ném kiểu ném cầu lông/ném vớt), quả bóng bay đi sẽ như thế nào?", options: ["A. Bóng bay là đà sát mặt đất và không đạt được cự li xa tối đa.", "B. Bóng sẽ bay vút lên thẳng đứng chạm mây xanh.", "C. Bóng tự động quay ngược lại trúng đầu người ném.", "D. Bóng biến mất vào không trung."], correct: 0 },
+                    { id: 6, type: "choice", text: "Câu 6: Vai trò của chất đạm (protein) đối với học sinh đang tuổi lớn và tập luyện thể thao là gì?", options: ["A. Xây dựng, duy trì và phát triển các mô cơ, tế bào của cơ thể.", "B. Cung cấp năng lượng chính thay thế hoàn toàn nước lọc.", "C. Làm giảm trí nhớ và sự tập trung.", "D. Giúp cơ thể đóng băng thân nhiệt."], correct: 0 },
+                    { id: 7, type: "choice", text: "Câu 7: Trò chơi 'Chạy tiếp sức 4x50m' rèn luyện cho học sinh những phẩm chất và kĩ năng gì?", options: ["A. Tốc độ, sự khéo léo, tinh thần đồng đội và kĩ năng trao gậy nhịp nhàng.", "B. Khả năng ngủ gật nhanh trong thời gian ngắn.", "C. Sức mạnh tĩnh để đẩy ô tô tải.", "D. Kĩ năng đọc thơ văn nghệ."], correct: 0 },
+                    { id: 8, type: "choice", text: "Câu 8: Khi trọng tài hô khẩu lệnh 'Sẵn sàng' trong xuất phát cao, học sinh cần làm gì?", options: ["A. Khuỵu gối, thân trên ngả trước, dồn trọng tâm lên chân trước, mắt nhìn trước.", "B. Đứng thẳng dậy đi bộ ra ngoài sân.", "C. Ngồi xuống buộc lại giày thể thao.", "D. Quay mặt về phía khán giả cười lớn."], correct: 0 },
+                    { id: 9, type: "choice", text: "Câu 9: Tại sao sau khi chạy cự li ngắn xong, học sinh tuyệt đối không được ngồi gục hoặc nằm im ngay xuống đất?", options: ["A. Vì dễ gây cản trở máu lưu thông về tim, gây chóng mặt, ngất xỉu hoặc choáng váng.", "B. Vì làm sân trường bị bẩn quần áo.", "C. Vì trọng tài sẽ phạt tiền học sinh.", "D. Vì làm cỏ sân trường bị héo."], correct: 0 },
+                    { id: 10, type: "choice", text: "Câu 10: Vitamin nào dưới đây có vai trò tăng cường hệ miễn dịch và sức đề kháng cho cơ thể, có nhiều trong cam, chanh, quýt, ổi?", options: ["A. Vitamin C.", "B. Vitamin Z.", "C. Chất chì kim loại nặng.", "D. Dầu mỏ công nghiệp."], correct: 0 },
+                    { id: 11, type: "choice", text: "Câu 11: Khi tham gia học tập và kiểm tra môn Giáo dục thể chất, thái độ đúng đắn của học sinh là gì?", options: ["A. Tích cực, trung thực, tự giác luyện trật tự, đảm bảo an toàn cho bản thân và bạn bè.", "B. Gian lận kết quả và xô đẩy bạn bè trên đường chạy.", "C. Trốn tiết học để đi chơi điện tử.", "D. Cãi lời giáo viên hướng dẫn."], correct: 0 },
+                    { id: 12, type: "choice", text: "Câu 12: Hình thức tổ chức kiểm tra đánh giá thường xuyên môn GDTC lớp 6 thường bao gồm những phần nào?", options: ["A. Kiểm tra lý thuyết dinh dưỡng - an toàn tập luyện và kiểm tra thực hành kĩ năng vận động.", "B. Kiểm tra làm thơ thất ngôn bát cú.", "C. Kiểm tra giải phương trình bậc hai.", "D. Kiểm tra nấu ăn mâm cỗ ngày tết."], correct: 0 },
+                    { id: 13, type: "choice", text: "Câu 13: Trong giai đoạn chạy giữa quãng của cự li 60m, tần số bước chạy và độ dài bước chạy cần duy trì thế nào?", options: ["A. Phối hợp nhịp nhàng, tối ưu để duy trì tốc độ cao nhất mà không bị gvault (cứng cơ).", "B. Chạy bước thật ngắn và lê lết trên mặt đất.", "C. Nhảy lò cò bằng một chân suốt chặng đường.", "D. Dừng lại đi bộ thư giãn."], correct: 0 },
+                    { id: 14, type: "choice", text: "Câu 14: Hành động nào thể hiện tinh thần Fair-play (chơi đẹp) trong các hoạt động thể thao trường học?", options: ["A. Tôn trọng đối thủ, tuân thủ luật lệ, chúc mừng bạn khi chiến thắng và động viên khi bạn chưa đạt kết quả.", "B. Cố tình chơi xấu làm bạn ngã đau để giành giải nhất.", "C. Chửi bới trọng tài khi không hài lòng.", "D. Tự ý bỏ cuộc thi đấu giữa chừng."], correct: 0 },
+                    { id: 15, type: "choice", text: "Câu 15: Đối với học sinh có hoàn cảnh sức khỏe hạn chế hoặc khuyết tật nhẹ, giáo viên đánh giá dựa trên tiêu chí nào?", options: ["A. Sự tiến bộ của bản thân học sinh, tinh thần tham gia và mức độ cố gắng nỗ lực.", "B. Bắt buộc phải đạt huy chương vàng thành tích cao.", "C. Không được tính điểm và loại khỏi danh sách lớp.", "D. Phải vượt qua thành tích của vận động viên quốc gia."], correct: 0 },
+                    { id: 16, type: "true_false", text: "Câu 16: Việc kết hợp hài hòa giữa dinh dưỡng khoa học, luyện tập thể thao và nghỉ ngơi hợp lý là chìa khóa vàng cho sự phát triển thể chất tuổi học đường.", correct: "Đúng" },
+                    { id: 17, type: "true_false", text: "Câu 17: Trong ném bóng xa, khi vung tay ném bóng, hướng nhìn của mắt phải quay ngược lại phía sau hoàn toàn để không nhìn thấy đường bay của bóng.", correct: "Sai" },
+                    { id: 18, type: "true_false", text: "Câu 18: Nước lọc và nước khoáng thiên nhiên là thức uống giải khát lành mạnh tốt nhất cho học sinh trong và sau giờ học thể chất.", correct: "Đúng" },
+                    { id: 19, type: "true_false", text: "Câu 19: Học sinh được tự ý sử dụng dụng cụ thể thao (bóng ném, gậy tiếp sức) để đùa nghịch ném đuổi nhau trong giờ ra chơi ở hành lang lớp học.", correct: "Sai" },
+                    { id: 20, type: "true_false", text: "Câu 20: Kiểm tra đánh giá thường xuyên giúp học sinh tự nhận ra ưu khuyết điểm của bản thân để tiếp tục rèn luyện nâng cao thành tích thể thao.", correct: "Đúng" }
+                ],
+                "GK1": [
+                    { id: 1, type: "choice", text: "Câu 1: Các loại vitamin nhóm B (B1, B2, B6, B12, PP) có vai trò và ảnh hưởng như thế nào đối với sự phát triển thể chất của cơ thể?", options: ["A. Là thành phần chủ yếu của cơ thể và điều hoà thân nhiệt.", "B. Được cơ thể tự tổng hợp từ ánh sáng mặt trời.", "C. Cần thiết cho sự chuyển hoá glucid, protein, lipid trong cơ thể, giúp phát triển bình thường và ăn ngon miệng.", "D. Là nguồn nguyên liệu chỉ có trong mỡ động vật và dầu thực vật."], correct: 2 },
+                    { id: 2, type: "choice", text: "Câu 2: Khi xây dựng bữa ăn phục vụ luyện tập TDTT, nhóm 'gan, mỡ, cá, lòng đỏ trứng, đu đủ, xoài' bổ sung nhiều vitamin A; còn nhóm 'cá trích, cá thu, cá hồi, cá ngừ' bổ sung chủ yếu vitamin nào?", options: ["A. Vitamin C.", "B. Vitamin E.", "C. Vitamin K.", "D. Vitamin D."], correct: 3 },
+                    { id: 3, type: "choice", text: "Câu 3: Trong khẩu phần ăn hằng ngày của người tập TDTT, bên cạnh sản phẩm từ sữa, tôm, cua, cá cung cấp canxi và phốt pho, việc bổ sung thêm 'thịt, tim, gan, đậu, rau xanh' có tác dụng cung cấp khoáng chất thiết yếu nào?", options: ["A. Khoáng chất kẽm.", "B. Khoáng chất sắt.", "C. Khoáng chất iốt.", "D. Chất bột đường (glucid)."], correct: 1 },
+                    { id: 4, type: "choice", text: "Câu 4: Chất đạm (protein) có nguồn gốc từ đâu?", options: ["A. Chỉ có trong thức ăn từ nguồn động vật (thịt, cá, sữa, trứng).", "B. Chỉ có trong gạo, bột mì và khoai.", "C. Có ở cả nguồn động vật và nguồn thực vật như các loại đậu, đặc biệt là đậu tương, lạc, vừng.", "D. Chỉ có trong mỡ động vật và dầu thực vật."], correct: 2 },
+                    { id: 5, type: "choice", text: "Câu 5: Trong buổi tập chạy cự li ngắn, cơ thể ra nhiều mồ hôi làm mất nước và muối khoáng nhưng học sinh nhịn uống nước sẽ dẫn đến hậu quả gì?", options: ["A. Giúp các nhóm cơ chân co duỗi nhanh hơn.", "B. Tăng thân nhiệt tạm thời nhưng chuyển hóa chất béo nhanh hơn.", "C. Một số nhóm cơ bị co cứng (chuột rút) hoặc cơ thể bị kiệt sức; cần ăn đúng bữa, đủ chất và uống đủ nước.", "D. Thiếu hụt vitamin K ngay lập tức."], correct: 2 },
+                    { id: 6, type: "choice", text: "Câu 6: Cả 'động tác bước nhỏ' và 'động tác nâng cao đùi' đều bắt đầu từ tư thế chuẩn bị đứng hai chân hẹp hơn vai, hai tay co tự nhiên. Điểm khác biệt cơ bản là gì?", options: ["A. Bước nhỏ chạm đất bằng cả bàn chân, chân kia nâng cao gót; nâng cao đùi chạm đất bằng nửa trước bàn chân, đùi nâng gần vuông góc.", "B. Bước nhỏ chạm đất bằng nửa trước bàn chân; nâng cao đùi chạm đất bằng cả bàn chân.", "C. Cả hai động tác đều chạm đất bằng gót chân.", "D. Cả hai động tác đều giữ chân đứng yên không đổi."], correct: 0 },
+                    { id: 7, type: "choice", text: "Câu 7: Khi thực hiện 'động tác đạp sau' (chân trái trước, chân phải sau), hoạt động phối hợp diễn ra như thế nào?", options: ["A. Giữ thân người thẳng đứng, hai tay cố định.", "B. Ngả thân ra trước; chân phải đưa ra trước tiếp đất bằng nửa trước bàn chân, chân trái đạp mạnh duỗi thẳng khớp gối và cổ chân đưa cơ thể rời mặt đất.", "C. Gập thân nhanh ra trước như khi về đích.", "D. Bật nhảy chụm hai chân liên tục."], correct: 1 },
+                    { id: 8, type: "choice", text: "Câu 8: Trong giai đoạn 'chạy giữa quãng', để duy trì tốc độ cao nhất, tư thế thân người và động tác thực hiện ra sao?", options: ["A. Thân trên hơi ngả ra trước, đầu thẳng, mắt nhìn phía trước; chân khi ở phía trước tích cực đưa đùi lên trên, ra trước và chạm đất bằng nửa trước bàn chân, chân sau đạp mạnh.", "B. Thân trên ngả ra sau, vung tay song song.", "C. Gập thân hoàn toàn suốt cự li 50m.", "D. Đi bộ chậm giữ sức."], correct: 0 },
+                    { id: 9, type: "choice", text: "Câu 9: Khi luyện tập kĩ thuật 'xuất phát cao' theo cặp đôi, sự khác biệt giữa khẩu lệnh 'Vào chỗ' và 'Sẵn sàng' là gì?", options: ["A. 'Vào chỗ' chỉ bước đặt chân thuận sát mép sau vạch, chân sau cách 15-20cm; 'Sẵn sàng' mới khuỵu hai gối, ngả thân trên ra trước, tay khác bên đưa trước.", "B. 'Vào chỗ' là khuỵu gối chạy luôn.", "C. Cả hai khẩu lệnh đều đứng thẳng.", "D. Cả hai khẩu lệnh đều đạp chân xuất phát."], correct: 0 },
+                    { id: 10, type: "choice", text: "Câu 10: Trong giai đoạn 'chạy lao sau xuất phát', người chạy cần phối hợp thế nào?", options: ["A. Giảm ngay tốc độ sau khi xuất phát.", "B. Đứng thẳng người từ bước đầu tiên.", "C. Duy trì độ ngả ra trước của thân trên, nỗ lực đạp mạnh chân kết hợp tăng dần tốc độ và độ dài bước chạy; giảm dần độ ngả thân trên theo tốc độ.", "D. Giữ nguyên một tốc độ chậm."], correct: 2 },
+                    { id: 11, type: "choice", text: "Câu 11: Phát biểu nào nêu đúng vai trò của 4 giai đoạn kĩ thuật chạy cự li ngắn (60m)?", options: ["A. Xuất phát giúp đạt tốc độ tối đa; chạy lao tăng dần tốc độ và độ dài bước; chạy giữa quãng duy trì tốc độ cao nhất; chạy về đích duy trì tốc độ và gập thân nhanh ra trước ở bước cuối.", "B. Xuất phát là chạy chậm; chạy về đích là tăng tốc đột ngột từ đầu.", "C. Cả 4 giai đoạn đều giống hệt nhau.", "D. Không cần quan tâm đến các giai đoạn."], correct: 0 },
+                    { id: 12, type: "choice", text: "Câu 12: Tại sao ở bước chạy cuối cùng của giai đoạn 'chạy về đích', người chạy lại thực hiện động tác 'gập thân nhanh ra trước' khi vượt qua vạch đích?", options: ["A. Để chạm tay xuống đất.", "B. Để dừng lại đột ngột ngay lập tức.", "C. Để thân người chạm tới mặt phẳng thẳng đứng của vạch đích sớm nhất theo đúng điều luật.", "D. Để chào khán giả."], correct: 2 },
+                    { id: 13, type: "choice", text: "Câu 13: Quy trình đảm bảo an toàn trong suốt buổi tập chạy cự li ngắn bao gồm những gì?", options: ["A. Trước khi tập khởi động chung và chuyên môn; trong khi chạy thở bằng cả mũi và miệng; sau khi chạy không dừng đột ngột mà chạy chậm dần chuyển thành đi bộ, thả lỏng.", "B. Không cần khởi động, chạy hết sức ngay; nín thở khi chạy; dừng đột ngột sau khi về đích.", "C. Chỉ ngồi xem bạn tập.", "D. Chỉ uống nước ngọt có ga."], correct: 0 },
+                    { id: 14, type: "choice", text: "Câu 14: Khi học sinh hạn chế vận động tham gia điều khiển nhóm tập luyện các động tác bổ trợ và phối hợp giai đoạn chạy, cần tổ chức thế nào?", options: ["A. Tập từ chậm đến nhanh, từ tại chỗ đến di chuyển; tập xuất phát cao và chạy lao trước rồi đến chạy giữa quãng và về đích; quan sát đánh giá bạn.", "B. Bắt buộc phải chạy 100m tốc độ cao ngay lập tức.", "C. Không được giao nhiệm vụ gì.", "D. Tự do chạy lung tung."], correct: 0 },
+                    { id: 15, type: "choice", text: "Câu 15: Trong các trò chơi vận động phát triển sức nhanh (Chạy tiếp sức, Đổi bóng nhanh dích dắc...), trường hợp nào thực hiện ĐÚNG quy định?", options: ["A. Bạn tiếp theo trong hàng chỉ xuất phát khi bạn thực hiện trước đã chạy về đến vạch xuất phát (hoặc đặt bóng về vị trí số 1).", "B. Xuất phát bất cứ lúc nào thích.", "C. Chạy ra ngoài vòng tròn quy định.", "D. Không cần tung bóng theo thứ tự."], correct: 0 },
+                    { id: 16, type: "true_false", text: "Câu 16: Khi luyện tập cá nhân động tác đạp sau, người tập đứng chống hai tay vào tường để hai chân luân phiên thực hiện động tác từng nhịp và tăng dần tốc độ.", correct: "Đúng" },
+                    { id: 17, type: "true_false", text: "Câu 17: Ở khẩu lệnh 'Sẵn sàng' trong xuất phát cao, nếu đặt chân thuận là chân trái ở trước thì phải đưa tay trái ra phía trước.", correct: "Sai" },
+                    { id: 18, type: "true_false", text: "Câu 18: Trong các giai đoạn của chạy cự li ngắn, giai đoạn tiếp ngay sau chạy lao nhằm duy trì tốc độ cao nhất đã đạt được gọi là 'chạy giữa quãng'.", correct: "Đúng" },
+                    { id: 19, type: "true_false", text: "Câu 19: Sau khi vượt qua vạch đích ở tốc độ cao, người chạy cần dừng lại đột ngột ngay lập tức để giữ thành tích.", correct: "Sai" },
+                    { id: 20, type: "true_false", text: "Câu 20: Khi quan sát bạn thực hiện các động tác bổ trợ và chạy giữa quãng, nếu thấy bạn tiếp đất bằng cả bàn chân làm giảm tốc độ, cần nhắc bạn sửa lại để tiếp đất bằng nửa trước bàn chân.", correct: "Đúng" }
+                ],
+                "CK1": [
+                    { id: 1, type: "choice", text: "Câu 1: Ôn tập tổng kết học kì I môn GDTC Lớp 6 bao gồm toàn bộ các nội dung kiến thức và thực hành nào đã học?", options: ["A. Lí thuyết dinh dưỡng thể thao, Chạy cự li ngắn 60m, Ném bóng và Bài thể dục phát triển chung.", "B. Môn Đua thuyền và Leo núi mạo hiểm.", "C. Môn Nhảy cầu trên cao.", "D. Môn Khúc côn cầu trên băng."], correct: 0 },
+                    { id: 2, type: "choice", text: "Câu 2: Tố chất thể lực chủ yếu được kiểm tra đánh giá qua bài kiểm tra cuối học kì I môn GDTC lớp 6 là gì?", options: ["A. Sức nhanh và sự khéo léo, phối hợp vận động cơ bản.", "B. Sức mạnh nâng tạ 200kg.", "C. Sức chịu đựng lặn sâu dưới nước 30 phút.", "D. Khả năng bay lượn trên không trung."], correct: 0 },
+                    { id: 3, type: "choice", text: "Câu 3: Quy tắc an toàn quan trọng nhất trong các giờ kiểm tra thực hành ngoài sân trường là gì?", options: ["A. Tuyệt đối tuân thủ sự phân công, điều khiển của giáo viên và quan sát kĩ không gian xung quanh.", "B. Tự do đùa nghịch chạy nhảy khi chưa đến lượt.", "C. Mang giày cao gót hoặc dép lê để thi đấu.", "D. Xô đẩy bạn bè ngã để tranh chỗ trước."], correct: 0 },
+                    { id: 4, type: "choice", text: "Câu 4: Vai trò của chất béo (lipid) trong khẩu phần ăn của học sinh tập luyện thể thao điều độ là gì?", options: ["A. Cung cấp năng lượng dự trữ, tham gia cấu trúc tế bào và hỗ trợ hấp thu các vitamin tan trong dầu.", "B. Làm cơ thể tê liệt cảm giác.", "C. Ngăn cản sự phát triển của xương.", "D. Không có bất kỳ vai trò gì."], correct: 0 },
+                    { id: 5, type: "choice", text: "Câu 5: Trong phần thi ném bóng xa cuối kì, học sinh cần thực hiện đúng mấy yêu cầu kĩ thuật chính?", options: ["A. Tư thế chuẩn bị - Đà chạy (hoặc bước đà) - Ra sức cuối cùng - Giữ thăng bằng sau ném.", "B. Chỉ cần đứng yên ném mạnh không cần đà.", "C. Ném bóng ngược về phía sau lưng.", "D. Ném bóng đập đất liên tục."], correct: 0 },
+                    { id: 6, type: "choice", text: "Câu 6: Phản ứng sinh lý bình thường của cơ thể sau khi hoàn thành bài kiểm tra chạy 60m hết sức là gì?", options: ["A. Nhịp tim tăng nhanh, thở sâu hơn, ra mồ hôi và sẽ ổn định lại sau vài phút thả lỏng.", "B. Cơ thể ngừng thở hoàn toàn vĩnh viễn.", "C. Nhiệt độ cơ thể giảm xuống bằng nước đá.", "D. Mất hoàn toàn trí nhớ tạm thời."], correct: 0 },
+                    { id: 7, type: "choice", text: "Câu 7: Trò chơi vận động 'Đổi bóng nhanh trên đường dích dắc' nhằm phát triển tố chất thể lực nào?", options: ["A. Tố chất sức nhanh và sự khéo léo, linh hoạt của cơ thể.", "B. Sức mạnh tĩnh để đứng yên một chỗ.", "C. Khả năng ngủ sâu giấc ban đêm.", "D. Khả năng tính nhẩm toán học nhanh."], correct: 0 },
+                    { id: 8, type: "choice", text: "Câu 8: Tại sao việc đánh giá kết quả học tập môn GDTC cuối học kì cần đảm bảo tính khách quan, công bằng và trung thực?", options: ["A. Để phản ánh chính xác sự nỗ lực rèn luyện của từng học sinh và khích lệ tinh thần thể thao.", "B. Để thiên vị một vài học sinh quen biết.", "C. Để không cần chấm điểm cho ai cả.", "D. Để học sinh không cần đi học nữa."], correct: 0 },
+                    { id: 9, type: "choice", text: "Câu 9: Trong tư thế chuẩn bị xuất phát cao, nếu học sinh đặt chân không đúng vị trí hoặc giẫm vạch sẽ được giáo viên nhắc nhở để làm gì?", options: ["A. Chỉnh sửa lại đúng điều luật thi đấu quy định.", "B. Bị đuổi ra khỏi sân ngay lập tức không cho thi.", "C. Bị phạt chạy 10 vòng sân trường.", "D. Phải đứng im trong lớp học lý thuyết."], correct: 0 },
+                    { id: 10, type: "choice", text: "Câu 10: Nhóm vitamin và khoáng chất nào có nhiều trong sữa tươi và các sản phẩm từ sữa giúp hệ xương chắc khỏe?", options: ["A. Canxi và Vitamin D.", "B. Chì và Thủy ngân độc hại.", "C. Axit sunfuric đậm đặc.", "D. Nhôm và Sắt gỉ sét."], correct: 0 },
+                    { id: 11, type: "choice", text: "Câu 11: Khi học sinh gặp chấn thương nhẹ trầy xước ngoài da khi té ngã trên sân tập, việc đầu tiên cần làm là gì?", options: ["A. Báo ngay cho giáo viên để được sơ cứu sát trùng vết thương đúng cách.", "B. Dùng đất cát đắp lên vết thương cho cầm máu.", "C. Giấu không cho ai biết và tiếp tục chạy nhảy mạnh.", "D. Ngâm vết thương vào nước muối đặc nóng ngay."], correct: 0 },
+                    { id: 12, type: "choice", text: "Câu 12: Đánh giá tổng kết học kì I môn GDTC đối với học sinh khuyết tật/miễn giảm thể lực dựa trên tiêu chí nào?", options: ["A. Sự chuyên cần, ý thức tham gia học tập, tinh thần cố gắng và đóng góp tích cực hỗ trợ lớp.", "B. Không xét điểm và cho điểm 0 tuyệt đối.", "C. Bắt buộc hoàn thành 100% nội dung người bình thường.", "D. Điểm số ngẫu nhiên không cần căn cứ."], correct: 0 },
+                    { id: 13, type: "choice", text: "Câu 13: Cảm giác sảng khoái, ăn ngon miệng và ngủ ngon giấc sau mỗi giờ học thể dục xuất phát từ nguyên nhân nào?", options: ["A. Quá trình trao đổi chất diễn ra mạnh mẽ, cơ thể được giải tỏa căng thẳng và rèn luyện thể lực.", "B. Do học sinh được nghỉ học các môn văn hóa.", "C. Do cơ thể bị kiệt sức hoàn toàn không thể cử động.", "D. Do uống thuốc ngủ trước khi ra sân."], correct: 0 },
+                    { id: 14, type: "choice", text: "Câu 14: Hành động bảo quản dụng cụ học tập môn GDTC (như bóng, gậy, thảm) thể hiện điều gì?", options: ["A. Ý thức trách nhiệm giữ gìn tài sản chung của nhà trường và tinh thần tôn trọng kỷ luật lớp học.", "B. Ý thức muốn chiếm đoạt dụng cụ mang về nhà riêng.", "C. Sự lãng phí thời gian không cần thiết.", "D. Thói quen xấu trong sinh hoạt."], correct: 0 },
+                    { id: 15, type: "choice", text: "Câu 15: Định hướng rèn luyện thể chất trong giai đoạn tiếp theo của học sinh sau khi kết thúc học kì I là gì?", options: ["A. Tiếp tục duy trì tập luyện thể dục buổi sáng, tham gia các môn thể thao yêu thích để nâng cao sức khỏe.", "B. Ngừng hoàn toàn việc vận động để nghỉ ngơi dài hạn.", "C. Chỉ ăn uống mà không tập luyện nữa.", "D. Chuyển sang môn thể thao mạo hiểm ngoài khả năng."], correct: 0 },
+                    { id: 16, type: "true_false", text: "Câu 16: Hoàn thành tốt chương trình môn Giáo dục thể chất học kì I giúp học sinh phát triển hài hòa các tố chất thể lực cơ bản.", correct: "Đúng" },
+                    { id: 17, type: "true_false", text: "Câu 17: Học sinh được quyền tự do tranh cãi gay gắt và xúc phạm trọng tài khi không đồng ý với kết quả kiểm tra.", correct: "Sai" },
+                    { id: 18, type: "true_false", text: "Câu 18: Thói quen vệ sinh thân thể, thay quần áo sạch sẽ sau giờ học thể dục giúp phòng ngừa các bệnh ngoài da và giữ gìn sức khỏe.", correct: "Đúng" },
+                    { id: 19, type: "true_false", text: "Câu 19: Việc khởi động không kĩ trước khi bước vào kiểm tra cuối kì là phương pháp tuyệt vời để đạt điểm cao.", correct: "Sai" },
+                    { id: 20, type: "true_false", text: "Câu 20: Tinh thần đoàn kết, hỗ trợ lẫn nhau trong tập luyện và kiểm tra thể chất là phẩm chất cao đẹp cần phát huy ở mỗi học sinh.", correct: "Đúng" }
+                ]
+            },
+            "7": {
+                "KTTX Lần 1": [
+                    { id: 1, type: "choice", text: "Câu 1: Trong chương trình GDTC Lớp 7 (sách Kết nối tri thức), chủ đề Chạy cự li ngắn (60m) tiếp tục được củng cố nhằm phát triển tố chất thể lực nào sau đây?", options: ["A. Phát triển tố chất sức nhanh.", "B. Phát triển tố chất sức bền trường kỳ qua nhiều giờ.", "C. Phát triển khả năng bơi lội dưới nước sâu.", "D. Phát triển khả năng cử tạ nặng."], correct: 0 },
+                    { id: 2, type: "choice", text: "Câu 2: Chủ đề phụ đi kèm trong nội dung kiểm tra thường xuyên lớp 7 thường liên quan đến yếu tố nào của môi trường tự nhiên?", options: ["A. Lựa chọn và sử dụng các yếu tố của môi trường tự nhiên (không khí, ánh sáng, nước) trong luyện tập.", "B. Sử dụng thiết bị điện tử thông minh.", "C. Nghiên cứu địa hình sao hóa vũ trụ.", "D. Lắp ráp máy móc công nghiệp."], correct: 0 },
+                    { id: 3, type: "choice", text: "Câu 3: Theo SGK GDTC 7, việc tập luyện thể dục thể thao ngoài trời tiếp xúc với ánh sáng mặt trời buổi sáng sớm có tác dụng gì?", options: ["A. Giúp cơ thể tổng hợp vitamin D, tăng cường trao đổi chất và chắc khỏe xương.", "B. Gây tổn hại da nặng ngay lập tức trong 1 giây.", "C. Làm giảm chiều cao tự nhiên.", "D. Khiến cơ thể mất hoàn toàn thị lực."], correct: 0 },
+                    { id: 4, type: "choice", text: "Câu 4: Khi chạy cự li ngắn ở lớp 7, học sinh cần thực hiện đúng mấy giai đoạn kĩ thuật cơ bản?", options: ["A. 4 giai đoạn: Xuất phát - Chạy lao sau xuất phát - Chạy giữa quãng - Về đích.", "B. 2 giai đoạn: Đứng nhìn đường rồi ngồi.", "C. 5 giai đoạn phức tạp như vận động viên Olympic.", "D. Chỉ có 1 giai đoạn đi bộ thả lỏng."], correct: 0 },
+                    { id: 5, type: "choice", text: "Câu 5: Trong kĩ thuật xuất phát cao ở lớp 7, khẩu lệnh của người chỉ huy theo thứ tự đúng là gì?", options: ["A. \"Vào chỗ!\" - \"Sẵn sàng!\" - \"Chạy!\".", "B. \"Chạy!\" - \"Vào chỗ!\" - \"Nghỉ!\".", "C. \"Nhảy!\" - \"Quay!\" - \"Dừng!\".", "D. Không cần khẩu lệnh thích chạy thì chạy."], correct: 0 },
+                    { id: 6, type: "choice", text: "Câu 6: Trò chơi vận động nào thích hợp để phát triển sức nhanh cho học sinh lớp 7?", options: ["A. Chạy tiếp sức cự li ngắn hoặc Trò chơi đuổi bắt nhanh.", "B. Đứng yên nhìn nhau cười.", "C. Ngồi chơi cờ tướng tĩnh tại.", "D. Nằm ngắm mây bay trên sân."], correct: 0 },
+                    { id: 7, type: "choice", text: "Câu 7: Không khí trong lành ở công viên hoặc sân trường nhiều cây xanh có lợi ích gì khi luyện tập thể thao?", options: ["A. Cung cấp dồi dào lượng oxy sạch cho hệ hô hấp, giúp cơ thể phục hồi nhanh và bền bỉ hơn.", "B. Gây ngạt thở và buồn ngủ.", "C. Làm tăng lượng bụi bẩn vào phổi.", "D. Không có tác dụng gì."], correct: 0 },
+                    { id: 8, type: "choice", text: "Câu 8: Động tác bổ trợ 'chạy nâng cao đùi' ở lớp 7 yêu cầu góc độ giữa đùi và thân người như thế nào khi đùi nâng lên?", options: ["A. Đùi nâng cao gần vuông góc với thân người (cẳng chân hướng tự nhiên xuống đất).", "B. Đùi ép sát hoàn toàn vào bụng.", "C. Chân duỗi thẳng cứng không gập gối.", "D. Đưa chân đá thẳng ngược ra sau lưng."], correct: 0 },
+                    { id: 9, type: "choice", text: "Câu 9: Khi tập luyện thể thao dưới trời nắng nóng, học sinh cần chú ý điều gì về trang phục và bảo vệ cơ thể?", options: ["A. Mặc trang phục thể thao gọn gàng, thoáng mát, đội mũ nón phù hợp và bổ sung đủ nước.", "B. Mặc áo ấm len dày nhiều lớp để ra mồ hôi thật nhiều.", "C. Đi giày cao gót hoặc dép lê cho thoải mái.", "D. Không cần mặc áo khi chạy ngoài nắng."], correct: 0 },
+                    { id: 10, type: "choice", text: "Câu 10: Trong giai đoạn 'chạy lao sau xuất phát' của cự li ngắn lớp 7, người chạy cần làm gì để tăng tốc độ nhanh chóng?", options: ["A. Tăng dần độ dài bước chạy, đạp mạnh chân ra sau - lên trước và giảm dần độ ngả thân người.", "B. Dừng lại ngay lập tức để cột lại dây giày.", "C. Ngồi thụp xuống đất rồi đứng dậy chạy tiếp.", "D. Chạy lùi về phía sau vạch xuất phát."], correct: 0 },
+                    { id: 11, type: "choice", text: "Câu 11: Nước suối, nước khoáng thiên nhiên có vai trò gì khi cơ thể vận động ra mồ hôi nhiều?", options: ["A. Bù đắp lượng nước và muối khoáng đã mất, duy trì thể trạng và cân bằng thân nhiệt.", "B. Làm cơ thể nặng thêm 10kg ngay lập tức.", "C. Gây đau bụng dữ dội và mất sức.", "D. Thay thế hoàn toàn thức ăn hằng tuần."], correct: 0 },
+                    { id: 12, type: "choice", text: "Câu 12: Biện pháp phòng tránh cảm nắng khi tập luyện thể dục ngoài trời vào những ngày nắng gắt là gì?", options: ["A. Tránh tập luyện trực tiếp dưới nắng gắt quá lâu, chọn nơi râm mát hoặc tập vào sáng sớm/chiều mát.", "B. Trùm kín chăn bông dày trên đầu khi chạy.", "C. Uống nước sôi đang bốc khói.", "D. Nhắm tịt hai mắt trong suốt buổi học."], correct: 0 },
+                    { id: 13, type: "choice", text: "Câu 13: Tại sao học sinh lớp 7 cần thực hiện nghiêm túc các bài tập thả lỏng hồi tĩnh sau khi chạy cự li ngắn?", options: ["A. Giúp đưa nhịp tim và hệ tuần hoàn trở lại bình thường từ từ, giảm căng cứng cơ.", "B. Để kéo dài thời gian ra về muộn.", "C. Để phạt học sinh chạy thêm vòng.", "D. Không có tác dụng gì đối với cơ thể."], correct: 0 },
+                    { id: 14, type: "choice", text: "Câu 14: Hành vi nào vi phạm điều luật cơ bản trong chạy cự li ngắn trên đường chạy phân làn?", options: ["A. Lấn sang làn đường của bạn bên cạnh để cản trở hoặc xô đẩy.", "B. Chạy đúng trong làn đường của mình từ vạch xuất phát đến vạch đích.", "C. Tự nỗ lực duy trì tốc độ cá nhân.", "D. Chúc mừng bạn sau khi hoàn thành cuộc đua."], correct: 0 },
+                    { id: 15, type: "choice", text: "Câu 15: Đối với học sinh khuyết tật hoặc thể lực hạn chế ở khối 7, giáo viên có thể giao nhiệm vụ thay thế nào cho phù hợp?", options: ["A. Quan sát, ghi nhận thành tích, hỗ trợ đếm nhịp hoặc thực hiện các động tác vận động nhẹ nhàng vừa sức.", "B. Bắt buộc thi đấu cự li 1000m tốc độ cao.", "C. Đứng phạt góc sân suốt tiết học.", "D. Không được đến sân trường."], correct: 0 },
+                    { id: 16, type: "true_false", text: "Câu 16: Tận dụng nguồn không khí trong lành và ánh sáng tự nhiên buổi sáng mang lại hiệu quả tích cực cho sức khỏe và tinh thần học tập của học sinh lớp 7.", correct: "Đúng" },
+                    { id: 17, type: "true_false", text: "Câu 17: Trong kĩ thuật xuất phát cao của chạy cự li ngắn lớp 7, vận động viên được phép xuất phát trước khi có hiệu lệnh còi của trọng tài.", correct: "Sai" },
+                    { id: 18, type: "true_false", text: "Câu 18: Nước đóng vai trò thiết yếu trong việc vận chuyển chất dinh dưỡng và đào thải các chất cặn bã khi cơ thể vận động.", correct: "Đúng" },
+                    { id: 19, type: "true_false", text: "Câu 19: Học sinh có thể tùy ý phơi nắng gắt trưa hè nhiều giờ liền mà không cần trang bị đồ bảo hộ hay uống nước.", correct: "Sai" },
+                    { id: 20, type: "true_false", text: "Câu 20: Việc duy trì nền nếp tập luyện thể dục thể thao đều đặn giúp học sinh lớp 7 phát triển vóc dáng cân đối và nâng cao ý chí kiên cường.", correct: "Đúng" }
+                ],
+                "KTTX Lần 2": [
+                    { id: 1, type: "choice", text: "Câu 1: Nội dung kiểm tra thường xuyên lần 2 môn GDTC Lớp 7 thường mở rộng sang các kĩ năng vận động nào tiếp theo chương trình học kì I?", options: ["A. Kĩ thuật phối hợp trong các bài tập thể dục nhịp điệu hoặc môn thể thao tự chọn (bóng rổ/bóng đá cơ bản).", "B. Môn Đua xe ô tô Công thức 1.", "C. Môn Nhảy dù tự do trên cao.", "D. Môn Khúc côn cầu dưới nước."], correct: 0 },
+                    { id: 2, type: "choice", text: "Câu 2: Khi tham gia các trò chơi vận động hoặc môn thể thao tập thể ở khối 7, yếu tố đạo đức thể thao quan trọng nhất là gì?", options: ["A. Tinh thần đồng đội, tôn trọng luật chơi, đoàn kết và trung thực (Fair-play).", "B. Bằng mọi giá phải thắng dù dùng tiểu xảo.", "C. Cố tình gây thương tích cho đối thủ cùng trường.", "D. Tự ý bỏ trận đấu khi thấy mệt."], correct: 0 },
+                    { id: 3, type: "choice", text: "Câu 3: Yếu tố tự nhiên nào sau đây hỗ trợ tốt nhất cho quá trình làm sạch cơ thể và giải nhiệt làn da sau khi tập luyện ra mồ hôi?", options: ["A. Sử dụng nước sạch sinh hoạt để tắm rửa, vệ sinh thân thể và giải khát đúng cách.", "B. Ngồi trước quạt máy công nghiệp công suất cực mạnh khi người đang đẫm mồ hôi hột.", "C. Mặc nguyên quần áo ướt mồ hôi đi ngủ ngay.", "D. Dùng nước đá lạnh dội trực tiếp lên đầu liên tục."], correct: 0 },
+                    { id: 4, type: "choice", text: "Câu 4: Trong các bài tập rèn luyện tư thế và tác phong cơ bản, động tác đi đều, đứng lại đòi hỏi học sinh khối 7 điều gì?", options: ["A. Sự đồng bộ nhịp nhàng bước chân theo tiếng hô hoặc nhịp trống, giữ thẳng lưng và mắt nhìn thẳng.", "B. Bước đi tùy ý không cần theo hàng lối.", "C. Vừa đi vừa ăn quà vặt trên sân.", "D. Nhảy lò cò thay cho bước đi đều."], correct: 0 },
+                    { id: 5, type: "choice", text: "Câu 5: Tại sao việc khởi động kĩ trước khi chơi các môn thể thao vận động mạnh ở lớp 7 lại bắt buộc?", options: ["A. Làm nóng cơ bắp, tăng độ nhờn dịch khớp, bôi trơn dây chằng và phòng ngừa tối đa các chấn thương thể thao.", "B. Để làm mất thời gian học tập chính khóa.", "C. Giúp học sinh mệt mỏi trước khi thi đấu.", "D. Không có tác dụng thực tế gì."], correct: 0 },
+                    { id: 6, type: "choice", text: "Câu 6: Lượng nước cần bổ sung cho cơ thể học sinh trong một buổi học thể chất phụ thuộc vào yếu tố nào?", options: ["A. Cường độ vận động, thời tiết ngoài trời và lượng mồ hôi tiết ra nhiều hay ít.", "B. Sở thích uống nước ngọt có ga thay nước lọc.", "C. Việc học sinh có mang theo tiền hay không.", "D. Số lượng bài tập về nhà môn toán."], correct: 0 },
+                    { id: 7, type: "choice", text: "Câu 7: Khi thực hiện động tác vươn thở trong các bài thể dục thả lỏng, nhịp hít vào và thở ra được phối hợp thế nào?", options: ["A. Đưa tay lên cao hít vào bằng mũi thật sâu, hạ tay xuống cúi người thở ra bằng miệng nhẹ nhàng.", "B. Nín thở hoàn toàn trong suốt quá trình vươn tay.", "C. Hít vào bằng miệng và thở ra bằng tai.", "D. Chỉ thở ra mà tuyệt đối không hít vào."], correct: 0 },
+                    { id: 8, type: "choice", text: "Câu 8: Phát biểu nào sau đây đúng khi nói về tác dụng của ánh sáng tự nhiên buổi sáng đối với học sinh?", options: ["A. Cung cấp năng lượng tích cực, kích thích tổng hợp vitamin D và cải thiện tâm trạng học tập.", "B. Gây tổn thương thị lực vĩnh viễn ngay lập tức.", "C. Làm giảm khả năng tư duy logic toán học.", "D. Không ảnh hưởng gì đến sức khỏe sinh học."], correct: 0 },
+                    { id: 9, type: "choice", text: "Câu 9: Trong trường hợp học sinh bị bong gân cổ chân nhẹ khi chơi thể thao sân trường, cách xử trí ban đầu đúng là gì?", options: ["A. Dừng vận động ngay, chườm lạnh vùng bị thương, băng ép nhẹ và báo giáo viên.", "B. Tiếp tục nhảy lò cò bằng chân bị thương cho mau khỏi.", "C. Xoa bóp rượu thuốc nóng ngay lập tức vào vết thương mới.", "D. Cố gắng kéo giãn mạnh khớp cổ chân ra hết mức."], correct: 0 },
+                    { id: 10, type: "choice", text: "Câu 10: Trò chơi 'Hoàng anh - Thiếu niên' hoặc các trò chơi vận động tiếp sức lớp 7 rèn luyện điều gì?", options: ["A. Phản xạ nhanh nhạy, sự khéo léo, tốc độ xử lý tình huống và tinh thần tập thể.", "B. Khả năng đứng im bất động như tượng đá.", "C. Khả năng ngủ gật trong tư thế đứng.", "D. Sức mạnh cơ hàm khi nhai kẹo cao su."], correct: 0 },
+                    { id: 11, type: "choice", text: "Câu 11: Ý nghĩa của việc tự giác kiểm tra nhịp tim và thể trạng cá nhân sau khi vận động cường độ cao là gì?", options: ["A. Giúp học sinh nắm bắt khả năng thích ứng của cơ thể để điều chỉnh mức độ vận động an toàn.", "B. Để khoe khoang thành tích với bạn bè trong lớp.", "C. Để trốn tiết học thể dục lần sau.", "D. Không có ý nghĩa quan trọng."], correct: 0 },
+                    { id: 12, type: "choice", text: "Câu 12: Dinh dưỡng sau giờ học thể chất cần ưu tiên nhóm thực phẩm nào để phục hồi cơ bắp?", options: ["A. Nhóm thực phẩm giàu chất đạm (thịt, cá, trứng, sữa) và glucid phức hợp kèm nước khoáng.", "B. Nhóm thức ăn nhanh chiên ngập dầu mỡ.", "C. Bánh kẹo ngọt chứa nhiều đường hóa học.", "D. Đồ uống có cồn kích thích."], correct: 0 },
+                    { id: 13, type: "choice", text: "Câu 13: Khi tham gia môn thể thao tập thể, hành động chuyền bóng cho đồng đội ở vị trí thuận lợi hơn thể hiện điều gì?", options: ["A. Tinh thần đồng đội cao độ, chơi vì tập thể lớp chứ không ích kỷ cá nhân.", "B. Sự sợ hãi không dám tự ném bóng.", "C. Ý đồ nhường điểm cho đội bạn.", "D. Thói quen chơi bời vô tổ chức."], correct: 0 },
+                    { id: 14, type: "choice", text: "Câu 14: Tiêu chí nào được đặt lên hàng đầu khi giáo viên chấm điểm đánh giá bài kiểm tra thực hành của học sinh lớp 7?", options: ["A. Động tác đúng kĩ thuật quy định, ý thức kỉ luật, sự nỗ lực cố gắng và tinh thần an toàn.", "B. Ngoại hình chiều cao của học sinh.", "C. Tốc độ nộp bài nhanh nhất lớp không cần biết đúng hay sai.", "D. Trang phục thời trang đắt tiền."], correct: 0 },
+                    { id: 15, type: "choice", text: "Câu 15: Hoạt động vệ sinh sân tập, cất gọn dụng cụ sau giờ kiểm tra mang lại giá trị giáo dục gì?", options: ["A. Rèn luyện lối sống ngăn nắp, ý thức trách nhiệm cộng đồng và tình yêu lao động tập thể.", "B. Làm tốn thời gian nghỉ ngơi của học sinh.", "C. Trách nhiệm thuộc riêng về bác lao công nhà trường.", "D. Không có ý nghĩa gì đối với học sinh."], correct: 0 },
+                    { id: 16, type: "true_false", text: "Câu 16: Việc kết hợp vận động thể thao ngoài trời với điều kiện không khí tự nhiên trong lành giúp học sinh lớp 7 phát triển toàn diện thể chất và tinh thần.", correct: "Đúng" },
+                    { id: 17, type: "true_false", text: "Câu 17: Học sinh được tự do tự ý sử dụng các dụng cụ thể thao nặng nguy hiểm khi không có sự giám sát của giáo viên.", correct: "Sai" },
+                    { id: 18, type: "true_false", text: "Câu 18: Bổ sung nước đúng thời điểm và đầy đủ chất dinh dưỡng giúp cơ thể học sinh nhanh chóng lấy lại năng lượng sau giờ học thể lực.", correct: "Đúng" },
+                    { id: 19, type: "true_false", text: "Câu 19: Chơi thể thao gian lận, xô đẩy bạn ngã để giành chiến thắng là hành vi đáng biểu dương khen ngợi.", correct: "Sai" },
+                    { id: 20, type: "true_false", text: "Câu 20: Tinh thần kỉ luật thép và ý thức tự giác rèn luyện thể dục thể thao là chìa khóa thành công của mỗi học sinh trung học cơ sở.", correct: "Đúng" }
+                ]
+            }
+        };
+
+        function updatePeriodOptions() {
+            const grade = document.getElementById('studentGradeSelect').value;
+            const periodSelect = document.getElementById('studentPeriodSelect');
+            periodSelect.innerHTML = '<option value="">-- Chọn Đợt Kiểm Tra / Kỳ Thi --</option>';
+
+            if (!grade || !EXAM_DATA[grade]) return;
+
+            const periods = Object.keys(EXAM_DATA[grade]);
+            periods.forEach(p => {
+                let label = p;
+                if (p === "KTTX Lần 1") label = "Kiểm Tra Thường Xuyên Lần 1";
+                else if (p === "KTTX Lần 2") label = "Kiểm Tra Thường Xuyên Lần 2";
+                else if (p === "KTTX Lần 3") label = "Kiểm Tra Thường Xuyên Lần 3";
+                else if (p === "KTTX Lần 4") label = "Kiểm Tra Thường Xuyên Lần 4";
+                else if (p === "GK1") label = "Kiểm Tra Giữa Kì I";
+                else if (p === "CK1") label = "Kiểm Tra Cuối Kì I";
+
+                periodSelect.innerHTML += `<option value="${p}">${label}</option>`;
+            });
+        }
+
+        let currentStudent = { name: '', className: '', grade: '', period: '' };
+        let activeExamQuestions = [];
+        let examStartTime = null;
+        let examClosesAt = null;
+        let timerInterval = null;
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        async function handleStudentLogin(e) {
+            e.preventDefault();
+            const grade = document.getElementById('studentGradeSelect').value;
+            const period = document.getElementById('studentPeriodSelect').value;
+            const name = document.getElementById('studentNameInput').value.trim();
+            const className = document.getElementById('studentClassInput').value.trim();
+
+            try {
+                const statusSnap = await window.fsTools.getDoc(window.fsTools.doc(window.db, "config", "exam_status"));
+                if (!statusSnap.exists() || !statusSnap.data().isOpen) {
+                    alert("Kỳ thi hiện đang bị ĐÓNG bởi giáo viên. Bạn chưa thể vào làm bài!");
+                    return;
+                }
+                const serverData = statusSnap.data();
+                const serverGrade = serverData.grade || "6";
+                const serverPeriod = serverData.period || "KTTX Lần 1";
+                
+                examStartTime = serverData.startedAt ? new Date(serverData.startedAt) : new Date();
+                examClosesAt = serverData.closesAt ? new Date(serverData.closesAt) : new Date(examStartTime.getTime() + 45 * 60000);
+
+                if (new Date() >= examClosesAt) {
+                    alert("Kỳ thi này đã tự động ĐÓNG vì đã quá thời gian làm bài 45 phút!");
+                    return;
+                }
+
+                if (String(serverGrade) !== String(grade) || serverPeriod !== period) {
+                    alert(`Giáo viên đang mở đề cho [Khối ${serverGrade} - ${serverPeriod}], không phải đợt bạn chọn!`);
+                    return;
+                }
+            } catch (err) {
+                alert("Lỗi kết nối kiểm tra trạng thái thi!");
+                return;
+            }
+
+            currentStudent = { name, className, grade, period };
+            document.getElementById('studentInfoDisplay').innerText = `Khối ${grade} (${period}) | ${name} - Lớp ${className}`;
+            document.getElementById('studentInfoDisplay').classList.remove('hidden');
+            document.getElementById('examTimerDisplay').classList.remove('hidden');
+
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('examSection').classList.remove('hidden');
+            document.getElementById('examTitleLabel').innerText = `ĐỀ KIỂM TRA (${period}) - KHỐI ${grade}`;
+
+            const rawQuestions = EXAM_DATA[grade][period] || EXAM_DATA["6"]["KTTX Lần 1"];
+
+            activeExamQuestions = shuffleArray(rawQuestions).map(q => {
+                let clonedQ = { ...q };
+                if (clonedQ.type === 'choice') {
+                    let indexedOptions = clonedQ.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+                    let shuffledOptions = shuffleArray(indexedOptions);
+                    clonedQ.shuffledOptions = shuffledOptions;
+                    clonedQ.newCorrectIndex = shuffledOptions.findIndex(item => item.originalIndex === clonedQ.correct);
+                }
+                return clonedQ;
+            });
+
+            renderExamQuestions();
+            startCountdownTimer();
+        }
+
+        function startCountdownTimer() {
+            timerInterval = setInterval(() => {
+                const now = new Date();
+                const diff = examClosesAt - now;
+
+                if (diff <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Đã hết thời gian làm bài 45 phút! Hệ thống sẽ tự động nộp bài của bạn.");
+                    submitExamAuto();
+                    return;
+                }
+
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                document.getElementById('timerCountdown').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function renderExamQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            activeExamQuestions.forEach((q, index) => {
+                if (q.type === 'choice') {
+                    let optionsHtml = q.shuffledOptions.map((optObj, oIdx) => `
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-xl cursor-pointer hover:bg-slate-100 transition">
+                            <input type="radio" name="q_${q.id}" value="${oIdx}" class="w-4 h-4 text-indigo-600">
+                            <span class="text-sm text-slate-700">${optObj.text}</span>
+                        </label>
+                    `).join('');
+
+                    container.innerHTML += `
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
+                            <h4 class="font-bold text-slate-800 text-sm">Câu ${index + 1}: ${q.text.replace(/^Câu \d+:\s*/, '')}</h4>
+                            <div class="space-y-2">${optionsHtml}</div>
+                        </div>
+                    `;
+                } else if (q.type === 'true_false') {
+                    container.innerHTML += `
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
+                            <h4 class="font-bold text-slate-800 text-sm">Câu ${index + 1}: ${q.text.replace(/^Câu \d+:\s*/, '')}</h4>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 p-3 bg-slate-50 border rounded-xl cursor-pointer hover:bg-slate-100 transition flex-1">
+                                    <input type="radio" name="q_${q.id}" value="0" class="w-4 h-4 text-indigo-600">
+                                    <span class="text-sm font-semibold text-emerald-700">Đúng</span>
+                                </label>
+                                <label class="flex items-center gap-2 p-3 bg-slate-50 border rounded-xl cursor-pointer hover:bg-slate-100 transition flex-1">
+                                    <input type="radio" name="q_${q.id}" value="1" class="w-4 h-4 text-indigo-600">
+                                    <span class="text-sm font-semibold text-rose-700">Sai</span>
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        async function submitExam(e) {
+            e.preventDefault();
+            if (!confirm("Bạn có chắc chắn muốn nộp bài không?")) return;
+            if (timerInterval) clearInterval(timerInterval);
+            processAndSaveSubmission();
+        }
+
+        async function submitExamAuto() {
+            if (timerInterval) clearInterval(timerInterval);
+            processAndSaveSubmission();
+        }
+
+        async function processAndSaveSubmission() {
+            let correctCount = 0;
+            let totalQuestions = activeExamQuestions.length;
+            let answersLog = [];
+
+            activeExamQuestions.forEach(q => {
+                const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
+                const val = selected ? parseInt(selected.value) : -1;
+                let isCorrect = false;
+
+                if (q.type === 'choice') {
+                    isCorrect = (val === q.newCorrectIndex);
+                } else if (q.type === 'true_false') {
+                    const correctVal = (q.correct === "Đúng" ? 0 : 1);
+                    isCorrect = (val === correctVal);
+                }
+
+                if (isCorrect) correctCount++;
+
+                let studentAnsText = "Không trả lời";
+                let correctAnsText = "";
+
+                if (q.type === 'choice') {
+                    studentAnsText = val !== -1 ? q.shuffledOptions[val].text : "Không trả lời";
+                    correctAnsText = q.shuffledOptions[q.newCorrectIndex].text;
+                } else {
+                    studentAnsText = val === 0 ? "Đúng" : (val === 1 ? "Sai" : "Không trả lời");
+                    correctAnsText = q.correct;
+                }
+
+                answersLog.push({
+                    type: q.type,
+                    questionText: q.text,
+                    studentAnswer: studentAnsText,
+                    correctAnswer: correctAnsText,
+                    isCorrect: isCorrect
+                });
+            });
+
+            const finalScore = parseFloat(((correctCount / totalQuestions) * 10).toFixed(1));
+            const submissionEndTime = new Date().toISOString();
+
+            try {
+                await window.fsTools.addDoc(window.fsTools.collection(window.db, "submissions"), {
+                    grade: currentStudent.grade,
+                    examPeriod: currentStudent.period,
+                    studentName: currentStudent.name,
+                    className: currentStudent.className,
+                    startedAt: examStartTime ? examStartTime.toISOString() : submissionEndTime,
+                    submittedAt: submissionEndTime,
+                    totalScore: finalScore,
+                    status: 'graded',
+                    answers: answersLog
+                });
+
+                document.getElementById('examSection').classList.add('hidden');
+                document.getElementById('examTimerDisplay').classList.add('hidden');
+                document.getElementById('resultSection').classList.remove('hidden');
+                document.getElementById('resTotal').innerText = `${finalScore} / 10 điểm (${correctCount}/${totalQuestions} câu đúng)`;
+                document.getElementById('resTimeLog').innerText = `Bắt đầu: ${new Date(examStartTime).toLocaleTimeString('vi-VN')} | Nộp bài: ${new Date(submissionEndTime).toLocaleTimeString('vi-VN')}`;
+            } catch (err) {
+                alert("Lỗi khi nộp bài: " + err.message);
+            }
+        }
+    </script>
+</body>
+</html>
