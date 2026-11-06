@@ -14,7 +14,7 @@
                 <div class="bg-white/20 p-2.5 rounded-xl"><i class="fa-solid fa-chalkboard-user text-2xl"></i></div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">Cổng Quản Lý Giáo Viên</h1>
-                    <p class="text-xs text-indigo-200">Hệ Thống Kiểm Tra Thể Chất Khối 6, 7, 8, 9</p>
+                    <p class="text-xs text-indigo-200">Hệ Thống Kiểm Tra Thể Chất Lớp 6</p>
                 </div>
             </div>
             <div class="flex gap-2">
@@ -41,14 +41,9 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1">Xem Đợt Thi:</label>
                     <select id="filterPeriod" onchange="filterSubmissions()" class="px-3 py-2 border rounded-xl text-sm font-semibold text-indigo-700 bg-slate-50 outline-none">
-                        <option value="KTTX Lần 1">Kiểm Tra Thường Xuyên Lần 1 (HK1)</option>
-                        <option value="KTTX Lần 2">Kiểm Tra Thường Xuyên Lần 2 (HK1)</option>
-                        <option value="GK1">Giữa Học Kì 1</option>
-                        <option value="CK1">Cuối Học Kì 1</option>
-                        <option value="KTTX Lần 3">Kiểm Tra Thường Xuyên Lần 1 (HK2)</option>
-                        <option value="KTTX Lần 4">Kiểm Tra Thường Xuyên Lần 2 (HK2)</option>
-                        <option value="GK2">Giữa Học Kì 2</option>
-                        <option value="CK2">Cuối Học Kì 2</option>
+                        <option value="KTTX Lần 1">Kiểm Tra Thường Xuyên Lần 1 (Gốc)</option>
+                        <option value="KTTX Lần 2">Kiểm Tra Thường Xuyên Lần 2</option>
+                        <option value="GK1">Kiểm Tra Giữa Kì I</option>
                     </select>
                 </div>
             </div>
@@ -60,7 +55,7 @@
         <!-- TAB 1: BẢNG ĐIỂM HỌC SINH -->
         <section id="gradingTab" class="space-y-6">
             <div class="bg-white rounded-2xl shadow-md p-6 border">
-                <h2 class="text-lg font-bold text-slate-800 mb-4"><i class="fa-solid fa-clipboard-list text-indigo-600"></i> Danh Sách Bài Làm Học Sinh</h2>
+                <h2 class="text-lg font-bold text-slate-800 mb-4"><i class="fa-solid fa-clipboard-list text-indigo-600"></i> Danh Sách Bài Làm & Lịch Sử Kỳ Thi</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -68,9 +63,9 @@
                                 <th class="p-3">Họ và Tên</th>
                                 <th class="p-3">Lớp</th>
                                 <th class="p-3">Khối</th>
+                                <th class="p-3">Thời gian bắt đầu</th>
                                 <th class="p-3">Thời gian nộp</th>
                                 <th class="p-3">Điểm tổng kết</th>
-                                <th class="p-3">Trạng thái</th>
                                 <th class="p-3 text-right">Chi tiết</th>
                             </tr>
                         </thead>
@@ -87,16 +82,22 @@
             <div class="bg-white rounded-2xl shadow-md p-6 border space-y-4">
                 <div class="flex justify-between items-center pb-2 border-b">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-book-open text-indigo-600"></i> Ngân Hàng Đề Thi Hiện Tại (Khối 6 - KTTX Lần 1)</h2>
-                        <p class="text-xs text-slate-500">Bao gồm 15 câu trắc nghiệm ABCD và 5 câu Đúng/Sai.</p>
+                        <h2 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-book-open text-indigo-600"></i> Ngân Hàng Đề Thi</h2>
+                        <p class="text-xs text-slate-500">Chọn đợt thi để xem danh sách câu hỏi.</p>
                     </div>
-                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full">20 Câu Hỏi</span>
+                    <div>
+                        <select id="bankPeriodSelect" onchange="renderQuestionsTable()" class="px-3 py-1.5 border rounded-xl text-xs font-semibold bg-slate-50 outline-none">
+                            <option value="KTTX Lần 1">KTTX Lần 1 (Gốc)</option>
+                            <option value="KTTX Lần 2">KTTX Lần 2</option>
+                            <option value="GK1">Kiểm Tra Giữa Kì I</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-50 border-b text-slate-600 text-xs uppercase font-bold">
+                            <tr class="bg-slate-50 border-b text-slate-600 text-xs uppercase font-bold sticky top-0">
                                 <th class="p-3 w-12 text-center">STT</th>
                                 <th class="p-3 w-32">Dạng câu hỏi</th>
                                 <th class="p-3">Nội dung câu hỏi</th>
@@ -109,12 +110,12 @@
             </div>
         </section>
 
-        <!-- TAB 3: ĐIỀU KHIỂN THỜI GIAN THI (CHỌN KHỐI & ĐỢT ĐỂ MỞ) -->
+        <!-- TAB 3: ĐIỀU KHIỂN THỜI GIAN THI -->
         <section id="controlTab" class="hidden space-y-6">
             <div class="bg-white rounded-2xl shadow-md p-6 border space-y-6">
                 <div>
-                    <h2 class="text-lg font-bold text-slate-800 mb-1"><i class="fa-solid fa-toggle-on text-indigo-600"></i> Cấu Hình & Điều Khiển Mở / Đóng Kỳ Thi</h2>
-                    <p class="text-xs text-slate-500">Giáo viên chọn Khối và Đợt thi cụ thể cần mở, sau đó bấm nút Mở để học sinh thuộc đợt đó có thể làm bài.</p>
+                    <h2 class="text-lg font-bold text-slate-800 mb-1"><i class="fa-solid fa-toggle-on text-indigo-600"></i> Cấu Hình & Điều Khiển Mở / Đóng Kỳ Thi (Thời lượng: 45 Phút)</h2>
+                    <p class="text-xs text-slate-500">Khi giáo viên bấm "Mở Kỳ Thi Này", hệ thống sẽ ghi nhận thời điểm bắt đầu và tự động đóng cổng thi sau đúng 45 phút.</p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-2xl border">
@@ -130,14 +131,9 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Chọn Đợt Thi Mở:</label>
                         <select id="controlPeriod" class="w-full px-3 py-2 border rounded-xl text-sm font-semibold bg-white outline-none">
-                            <option value="KTTX Lần 1">Kiểm Tra Thường Xuyên Lần 1 (HK1)</option>
-                            <option value="KTTX Lần 2">Kiểm Tra Thường Xuyên Lần 2 (HK1)</option>
-                            <option value="GK1">Giữa Học Kì 1</option>
-                            <option value="CK1">Cuối Học Kì 1</option>
-                            <option value="KTTX Lần 3">Kiểm Tra Thường Xuyên Lần 1 (HK2)</option>
-                            <option value="KTTX Lần 4">Kiểm Tra Thường Xuyên Lần 2 (HK2)</option>
-                            <option value="GK2">Giữa Học Kì 2</option>
-                            <option value="CK2">Cuối Học Kì 2</option>
+                            <option value="KTTX Lần 1">Kiểm Tra Thường Xuyên Lần 1 (Gốc)</option>
+                            <option value="KTTX Lần 2">Kiểm Tra Thường Xuyên Lần 2</option>
+                            <option value="GK1">Kiểm Tra Giữa Kì I</option>
                         </select>
                     </div>
                 </div>
@@ -149,10 +145,10 @@
                     </div>
                     <div class="flex gap-3">
                         <button onclick="setExamStatus(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-sm shadow-sm flex items-center gap-2 transition cursor-pointer">
-                            <i class="fa-solid fa-play"></i> Mở Kỳ Thi Này
+                            <i class="fa-solid fa-play"></i> Mở Kỳ Thi Này (45 Phút)
                         </button>
                         <button onclick="setExamStatus(false)" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-6 py-3 rounded-xl text-sm shadow-sm flex items-center gap-2 transition cursor-pointer">
-                            <i class="fa-solid fa-stop"></i> Đóng Cổng Thi
+                            <i class="fa-solid fa-stop"></i> Đóng Cổng Thi Ngay
                         </button>
                     </div>
                 </div>
@@ -203,7 +199,13 @@
             const badge = document.getElementById('examStatusBadge');
             if (docSnap.exists() && docSnap.data().isOpen) {
                 const data = docSnap.data();
-                badge.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">🟢 Đang Mở [Khối ${data.grade || 6} - ${data.period || 'KTTX Lần 1'}]</span>`;
+                const closesAt = data.closesAt ? new Date(data.closesAt) : null;
+                
+                if (closesAt && new Date() >= closesAt) {
+                    badge.innerHTML = `<span class="text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">⌛ Đã tự động đóng (Hết giờ 45 phút)</span>`;
+                } else {
+                    badge.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">🟢 Đang Mở [Khối ${data.grade || 6} - ${data.period || 'KTTX Lần 1'}] (Hạn: ${closesAt ? closesAt.toLocaleTimeString('vi-VN') : ''})</span>`;
+                }
             } else {
                 badge.innerHTML = `<span class="text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">🔴 Đã Đóng Toàn Bộ</span>`;
             }
@@ -211,37 +213,91 @@
     </script>
 
     <script>
-        const EXAM_QUESTIONS = [
-            { id: 1, type: "choice", text: "Câu 1: Trong chế độ dinh dưỡng tập luyện thể dục thể thao, nhóm thực phẩm nào sau đây cung cấp nhiều chất đường bột (Carbohydrate) cho cơ thể?", options: ["A. Cơm, bánh mì, khoai, ngô.", "B. Nước lọc đóng chai.", "C. Muối ăn hằng ngày.", "D. Đá viên làm lạnh."], correct: 0 },
-            { id: 2, type: "choice", text: "Câu 2: Thực phẩm nào dưới đây giàu chất đạm (Protein) giúp xây dựng và phát triển cơ bắp khi tập luyện thể dục thể thao?", options: ["A. Thịt, cá, trứng, sữa, đậu đỗ.", "B. Nước ngọt có ga.", "C. Kẹo cao su.", "D. Nước đá lạnh."], correct: 0 },
-            { id: 3, type: "choice", text: "Câu 3: Để cung cấp nhiều vitamin và chất khoáng cho cơ thể khi tập luyện, hằng ngày em cần ăn nhóm thực phẩm nào?", options: ["A. Rau xanh và các loại quả chín.", "B. Kẹo mút nhiều màu sắc.", "C. Đồ ăn nhanh chiên nhiều dầu mỡ.", "D. Nước ngọt đóng lon."], correct: 0 },
-            { id: 4, type: "choice", text: "Câu 4: Vì sao nước là yếu tố dinh dưỡng đặc biệt quan trọng đối với người tập luyện thể dục thể thao?", options: ["A. Vì nước giúp bù lại lượng mồ hôi đã mất, điều hòa thân nhiệt và giúp cơ thể không bị mệt lả.", "B. Vì uống nước giúp học sinh không cần phải ăn cơm hay thức ăn trong cả tuần.", "C. Vì nước giúp cơ thể nặng hơn để đứng yên một chỗ không phải vận động.", "D. Vì uống nước giúp thay thế hoàn toàn việc khởi động khớp trước khi tập."], correct: 0 },
-            { id: 5, type: "choice", text: "Câu 5: Điều gì sẽ xảy ra với cơ thể nếu học sinh nhịn ăn sáng và để bụng đói khi tham gia giờ học Giáo dục thể chất?", options: ["A. Cơ thể bị thiếu năng lượng, dễ bị mệt mỏi, hoa mắt, chóng mặt và tập luyện kém hiệu quả.", "B. Cơ thể sẽ có nhiều sức mạnh hơn và chạy nhanh hơn bình thường.", "C. Cơ bắp sẽ phát triển to khỏe ngay lập tức mà không cần tập luyện.", "D. Cơ thể không bao giờ bị khát nước trong suốt buổi học."], correct: 0 },
-            { id: 6, type: "choice", text: "Câu 6: Theo điều luật cơ bản trong chạy cự li ngắn, người chạy chỉ được phép rời khỏi vị trí xuất phát để bắt đầu chạy khi nào?", options: ["A. Khi có hiệu lệnh “Chạy!\" (hoặc tiếng còi, cờ lệnh) của người điều khiển.", "B. Khi mới nghe khẩu lệnh \"Vào chỗ!\".", "C. Khi tự ý thích chạy lúc nào thì chạy trước các bạn.", "D. Khi trọng tài còn đang kiểm tra danh sách ở bàn."], correct: 0 },
-            { id: 7, type: "choice", text: "Câu 7: Trong giờ học Chạy cự li ngắn lớp 6, trò chơi vận động nào dưới đây thường được sử dụng để rèn luyện và phát triển sức nhanh?", options: ["A. Trò chơi \"Chạy tiếp sức\" (hoặc \"Chạy đuổi\").", "B. Trò chơi \"Đứng yên một chân nhắm mắt ngủ\".", "C. Trò chơi \"Ngồi đánh cờ vua trong lớp\".", "D. Trò chơi \"Nằm im đọc truyện tranh\"."], correct: 0 },
-            { id: 8, type: "choice", text: "Câu 8: Kĩ thuật chạy cự li ngắn (60m) ở lớp 6 bao gồm mấy giai đoạn theo đúng thứ tự từ lúc bắt đầu đến lúc kết thúc?", options: ["A. 4 giai đoạn: Xuất phát - Chạy lao sau xuất phát - Chạy giữa quãng – Về đích.", "B. 2 giai đoạn: Đứng nhìn đường chạy – Đi bộ về chỗ ngồi.", "C. 3 giai đoạn: Chạy về đích – Chạy giữa quãng – Xuất phát.", "D. 1 giai đoạn duy nhất là Đứng yên tại vạch đích."], correct: 0 },
-            { id: 9, type: "choice", text: "Câu 9: Trong giờ học Giáo dục thể chất lớp 6, các hình thức tổ chức tập luyện kĩ thuật chạy cự li ngắn thường gồm những hình thức nào?", options: ["A. Tập luyện cá nhân, tập luyện theo cặp/nhóm (tổ) và tập luyện cả lớp.", "B. Chỉ có hình thức ngồi xem tivi ở nhà.", "C. Chỉ có hình thức thi đấu giải vô địch quốc gia.", "D. Chỉ có hình thức làm bài kiểm tra viết trên giấy."], correct: 0 },
-            { id: 10, type: "choice", text: "Câu 10: Khi điều khiển tổ, nhóm tập luyện kĩ thuật xuất phát cao, người chỉ huy cần hô lần lượt 3 khẩu lệnh nào theo đúng thứ tự?", options: ["A. \"Vào chỗ!\" – \"Sẵn sàng!\" - \"Chạy!\".", "B. \"Chạy!\" - \"Vào chỗ!\" - \"Nghỉ!\".", "C. \"Nằm xuống!\" – \"Ngồi dậy!\" – \"Đi bộ!\".", "D. \"Nhắm mắt!\" - \"Quay sau!\" - \"Đứng lại!\"."], correct: 0 },
-            { id: 11, type: "choice", text: "Câu 11: Trong kĩ thuật chạy cự li ngắn 60m, giai đoạn \"Chạy lao sau xuất phát\" có vai trò chính là gì?", options: ["A. Giúp người chạy nhanh chóng tăng tốc độ từ vị trí xuất phát để chuyển vào chạy giữa quãng.", "B. Giúp người chạy dừng hẳn lại tại vạch xuất phát để buộc lại dây giày.", "C. Giúp người chạy đi bộ chậm rãi để nghỉ mệt ngay khi vừa rời vạch xuất phát.", "D. Giúp người chạy quay lưng chạy ngược về phía sau vạch xuất phát."], correct: 0 },
-            { id: 12, type: "choice", text: "Câu 12: Khi thực hiện động tác bổ trợ “Chạy bước nhỏ\", bàn chân của người tập tiếp xúc với mặt đất như thế nào là đúng kĩ thuật?", options: ["A. Tiếp đất bằng nửa trước bàn chân, cổ chân linh hoạt, bước chân ngắn và nhanh.", "B. Tiếp đất mạnh bằng cả gót chân và giữ thẳng cứng hai đầu gối.", "C. Nhảy chụm cả hai chân cùng một lúc như nhảy bao bố.", "D. Ngồi xổm dưới đất và lết hai bàn chân đi tới."], correct: 0 },
-            { id: 13, type: "choice", text: "Câu 13: Động tác bổ trợ nào có đặc điểm: \"Chân sau đạp duỗi thẳng hoàn toàn, đùi chân trước nâng cao đưa ra trước, thân trên hơi ngả về trước, hai tay đánh phối hợp tự nhiên\"?", options: ["A. Động tác Chạy đạp sau.", "B. Động tác Đứng nghiêm chào cờ.", "C. Động tác Ngồi gập thân tại chỗ.", "D. Động tác Xoay cổ tay cổ chân."], correct: 0 },
-            { id: 14, type: "choice", text: "Câu 14: Khi quan sát bạn thực hiện giai đoạn “Chạy giữa quãng\", nếu thấy bạn mắc lỗi \"đánh hai tay vung ngang bắt chéo trước ngực\", em cần nhắc bạn sửa sai như thế nào?", options: ["A. Gập khuỷu tay vừa phải và đánh tay nhịp nhàng theo hướng trước sau phối hợp với bước chân.", "B. Buộc chặt hai tay vào sát hai bên đùi không cho cử động khi chạy.", "C. Giơ thẳng cả hai tay lên cao quá đầu trong suốt quãng đường chạy.", "D. Chắp hai tay ra sau lưng giống như đang đi dạo."], correct: 0 },
-            { id: 15, type: "choice", text: "Câu 15: Để đảm bảo an toàn và phòng tránh chấn thương trước khi bước vào tập luyện Chạy cự li ngắn, học sinh bắt buộc phải làm việc gì đầu tiên?", options: ["A. Khởi động kĩ các khớp (cổ tay, cổ chân, gối, hông, vai...) và làm nóng cơ thể.", "B. Chạy hết sức thật nhanh ngay khi vừa bước ra sân mà không cần khởi động.", "C. Tháo giày thể thao ra và đi dép lê trơn trượt để chạy.", "D. Đứng chen lấn, xô đẩy các bạn trên đường chạy."], correct: 0 },
-            { id: 16, type: "true_false", text: "Câu 16: Theo điều luật cơ bản trong chạy cự li ngắn, mỗi người chạy phải chạy đúng trong ô (làn) đường chạy của mình, không được lấn sang đường chạy để cản trở hay xô đẩy người bên cạnh.", correct: "Đúng" },
-            { id: 17, type: "true_false", text: "Câu 17: Ở chương trình Giáo dục thể chất lớp 6 (sách Kết nối tri thức), trong giai đoạn Xuất phát của chạy cự li ngắn 60m, học sinh được học kĩ thuật Xuất phát cao.", correct: "Đúng" },
-            { id: 18, type: "true_false", text: "Câu 18: Trong kĩ thuật chạy cự li ngắn 60m, vai trò của giai đoạn Chạy giữa quãng là giúp người chạy dừng hẳn lại giữa đường để ngồi nghỉ uống nước.", correct: "Sai" },
-            { id: 19, type: "true_false", text: "Câu 19: Khi thực hiện kĩ thuật Xuất phát cao ở khẩu lệnh 'Vào chỗ!', nếu học sinh đặt cả hai chân giẫm đè lên trên vạch xuất phát là sai quy định, cần điều chỉnh lùi mũi chân trước về sát mép sau của vạch xuất phát.", correct: "Đúng" },
-            { id: 20, type: "true_false", text: "Câu 20: Để đảm bảo an toàn trong giai đoạn Về đích chạy 60m, ngay khi ngực vừa chạm qua vạch đích, người chạy phải đứng khựng lại đột ngột hoặc ngồi thụp ngay xuống vạch đích.", correct: "Sai" }
-        ];
+        const EXAM_DATA = {
+            "KTTX Lần 1": [
+                { id: 1, type: "choice", text: "Câu 1: Trong chế độ dinh dưỡng tập luyện thể dục thể thao, nhóm thực phẩm nào sau đây cung cấp nhiều chất đường bột (Carbohydrate) cho cơ thể?", options: ["A. Cơm, bánh mì, khoai, ngô.", "B. Nước lọc đóng chai.", "C. Muối ăn hằng ngày.", "D. Đá viên làm lạnh."], correct: 0 },
+                { id: 2, type: "choice", text: "Câu 2: Thực phẩm nào dưới đây giàu chất đạm (Protein) giúp xây dựng và phát triển cơ bắp khi tập luyện thể dục thể thao?", options: ["A. Thịt, cá, trứng, sữa, đậu đỗ.", "B. Nước ngọt có ga.", "C. Kẹo cao su.", "D. Nước đá lạnh."], correct: 0 },
+                { id: 3, type: "choice", text: "Câu 3: Để cung cấp nhiều vitamin và chất khoáng cho cơ thể khi tập luyện, hằng ngày em cần ăn nhóm thực phẩm nào?", options: ["A. Rau xanh và các loại quả chín.", "B. Kẹo mút nhiều màu sắc.", "C. Đồ ăn nhanh chiên nhiều dầu mỡ.", "D. Nước ngọt đóng lon."], correct: 0 },
+                { id: 4, type: "choice", text: "Câu 4: Vì sao nước là yếu tố dinh dưỡng đặc biệt quan trọng đối với người tập luyện thể dục thể thao?", options: ["A. Vì nước giúp bù lại lượng mồ hôi đã mất, điều hòa thân nhiệt và giúp cơ thể không bị mệt lả.", "B. Vì uống nước giúp học sinh không cần phải ăn cơm hay thức ăn trong cả tuần.", "C. Vì nước giúp cơ thể nặng hơn để đứng yên một chỗ không phải vận động.", "D. Vì uống nước giúp thay thế hoàn toàn việc khởi động khớp trước khi tập."], correct: 0 },
+                { id: 5, type: "choice", text: "Câu 5: Điều gì sẽ xảy ra với cơ thể nếu học sinh nhịn ăn sáng và để bụng đói khi tham gia giờ học Giáo dục thể chất?", options: ["A. Cơ thể bị thiếu năng lượng, dễ bị mệt mỏi, hoa mắt, chóng mặt và tập luyện kém hiệu quả.", "B. Cơ thể sẽ có nhiều sức mạnh hơn và chạy nhanh hơn bình thường.", "C. Cơ bắp sẽ phát triển to khỏe ngay lập tức mà không cần tập luyện.", "D. Cơ thể không bao giờ bị khát nước trong suốt buổi học."], correct: 0 },
+                { id: 6, type: "choice", text: "Câu 6: Theo điều luật cơ bản trong chạy cự li ngắn, người chạy chỉ được phép rời khỏi vị trí xuất phát để bắt đầu chạy khi nào?", options: ["A. Khi có hiệu lệnh “Chạy!\" (hoặc tiếng còi, cờ lệnh) của người điều khiển.", "B. Khi mới nghe khẩu lệnh \"Vào chỗ!\".", "C. Khi tự ý thích chạy lúc nào thì chạy trước các bạn.", "D. Khi trọng tài còn đang kiểm tra danh sách ở bàn."], correct: 0 },
+                { id: 7, type: "choice", text: "Câu 7: Trong giờ học Chạy cự li ngắn lớp 6, trò chơi vận động nào dưới đây thường được sử dụng để rèn luyện và phát triển sức nhanh?", options: ["A. Trò chơi \"Chạy tiếp sức\" (hoặc \"Chạy đuổi\").", "B. Trò chơi \"Đứng yên một chân nhắm mắt ngủ\".", "C. Trò chơi \"Ngồi đánh cờ vua trong lớp\".", "D. Trò chơi \"Nằm im đọc truyện tranh\"."], correct: 0 },
+                { id: 8, type: "choice", text: "Câu 8: Kĩ thuật chạy cự li ngắn (60m) ở lớp 6 bao gồm mấy giai đoạn theo đúng thứ tự từ lúc bắt đầu đến lúc kết thúc?", options: ["A. 4 giai đoạn: Xuất phát - Chạy lao sau xuất phát - Chạy giữa quãng – Về đích.", "B. 2 giai đoạn: Đứng nhìn đường chạy – Đi bộ về chỗ ngồi.", "C. 3 giai đoạn: Chạy về đích – Chạy giữa quãng – Xuất phát.", "D. 1 giai đoạn duy nhất là Đứng yên tại vạch đích."], correct: 0 },
+                { id: 9, type: "choice", text: "Câu 9: Trong giờ học Giáo dục thể chất lớp 6, các hình thức tổ chức tập luyện kĩ thuật chạy cự li ngắn thường gồm những hình thức nào?", options: ["A. Tập luyện cá nhân, tập luyện theo cặp/nhóm (tổ) và tập luyện cả lớp.", "B. Chỉ có hình thức ngồi xem tivi ở nhà.", "C. Chỉ có hình thức thi đấu giải vô địch quốc gia.", "D. Chỉ có hình thức làm bài kiểm tra viết trên giấy."], correct: 0 },
+                { id: 10, type: "choice", text: "Câu 10: Khi điều khiển tổ, nhóm tập luyện kĩ thuật xuất phát cao, người chỉ huy cần hô lần lượt 3 khẩu lệnh nào theo đúng thứ tự?", options: ["A. \"Vào chỗ!\" – \"Sẵn sàng!\" - \"Chạy!\".", "B. \"Chạy!\" - \"Vào chỗ!\" - \"Nghỉ!\".", "C. \"Nằm xuống!\" – \"Ngồi dậy!\" – \"Đi bộ!\".", "D. \"Nhắm mắt!\" - \"Quay sau!\" - \"Đứng lại!\"."], correct: 0 },
+                { id: 11, type: "choice", text: "Câu 11: Trong kĩ thuật chạy cự li ngắn 60m, giai đoạn \"Chạy lao sau xuất phát\" có vai trò chính là gì?", options: ["A. Giúp người chạy nhanh chóng tăng tốc độ từ vị trí xuất phát để chuyển vào chạy giữa quãng.", "B. Giúp người chạy dừng hẳn lại tại vạch xuất phát để buộc lại dây giày.", "C. Giúp người chạy đi bộ chậm rãi để nghỉ mệt ngay khi vừa rời vạch xuất phát.", "D. Giúp người chạy quay lưng chạy ngược về phía sau vạch xuất phát."], correct: 0 },
+                { id: 12, type: "choice", text: "Câu 12: Khi thực hiện động tác bổ trợ “Chạy bước nhỏ\", bàn chân của người tập tiếp xúc với mặt đất như thế nào là đúng kĩ thuật?", options: ["A. Tiếp đất bằng nửa trước bàn chân, cổ chân linh hoạt, bước chân ngắn và nhanh.", "B. Tiếp đất mạnh bằng cả gót chân và giữ thẳng cứng hai đầu gối.", "C. Nhảy chụm cả hai chân cùng một lúc như nhảy bao bố.", "D. Ngồi xổm dưới đất và lết hai bàn chân đi tới."], correct: 0 },
+                { id: 13, type: "choice", text: "Câu 13: Động tác bổ trợ nào có đặc điểm: \"Chân sau đạp duỗi thẳng hoàn toàn, đùi chân trước nâng cao đưa ra trước, thân trên hơi ngả về trước, hai tay đánh phối hợp tự nhiên\"?", options: ["A. Động tác Chạy đạp sau.", "B. Động tác Đứng nghiêm chào cờ.", "C. Động tác Ngồi gập thân tại chỗ.", "D. Động tác Xoay cổ tay cổ chân."], correct: 0 },
+                { id: 14, type: "choice", text: "Câu 14: Khi quan sát bạn thực hiện giai đoạn “Chạy giữa quãng\", nếu thấy bạn mắc lỗi \"đánh hai tay vung ngang bắt chéo trước ngực\", em cần nhắc bạn sửa sai như thế nào?", options: ["A. Gập khuỷu tay vừa phải và đánh tay nhịp nhàng theo hướng trước sau phối hợp với bước chân.", "B. Buộc chặt hai tay vào sát hai bên đùi không cho cử động khi chạy.", "C. Giơ thẳng cả hai tay lên cao quá đầu trong suốt quãng đường chạy.", "D. Chắp hai tay ra sau lưng giống như đang đi dạo."], correct: 0 },
+                { id: 15, type: "choice", text: "Câu 15: Để đảm bảo an toàn và phòng tránh chấn thương trước khi bước vào tập luyện Chạy cự li ngắn, học sinh bắt buộc phải làm việc gì đầu tiên?", options: ["A. Khởi động kĩ các khớp (cổ tay, cổ chân, gối, hông, vai...) và làm nóng cơ thể.", "B. Chạy hết sức thật nhanh ngay khi vừa bước ra sân mà không cần khởi động.", "C. Tháo giày thể thao ra và đi dép lê trơn trượt để chạy.", "D. Đứng chen lấn, xô đẩy các bạn trên đường chạy."], correct: 0 },
+                { id: 16, type: "true_false", text: "Câu 16: Theo điều luật cơ bản trong chạy cự li ngắn, mỗi người chạy phải chạy đúng trong ô (làn) đường chạy của mình, không được lấn sang đường chạy để cản trở hay xô đẩy người bên cạnh.", correct: "Đúng" },
+                { id: 17, type: "true_false", text: "Câu 17: Ở chương trình Giáo dục thể chất lớp 6 (sách Kết nối tri thức), trong giai đoạn Xuất phát của chạy cự li ngắn 60m, học sinh được học kĩ thuật Xuất phát cao.", correct: "Đúng" },
+                { id: 18, type: "true_false", text: "Câu 18: Trong kĩ thuật chạy cự li ngắn 60m, vai trò của giai đoạn Chạy giữa quãng là giúp người chạy dừng hẳn lại giữa đường để ngồi nghỉ uống nước.", correct: "Sai" },
+                { id: 19, type: "true_false", text: "Câu 19: Khi thực hiện kĩ thuật Xuất phát cao ở khẩu lệnh 'Vào chỗ!', nếu học sinh đặt cả hai chân giẫm đè lên trên vạch xuất phát là sai quy định, cần điều chỉnh lùi mũi chân trước về sát mép sau của vạch xuất phát.", correct: "Đúng" },
+                { id: 20, type: "true_false", text: "Câu 20: Để đảm bảo an toàn trong giai đoạn Về đích chạy 60m, ngay khi ngực vừa chạm qua vạch đích, người chạy phải đứng khựng lại đột ngột hoặc ngồi thụp ngay xuống vạch đích.", correct: "Sai" }
+            ],
+            "KTTX Lần 2": [
+                { id: 1, type: "choice", text: "Câu 1: Sức khỏe và sự phát triển thể chất của con người phụ thuộc vào ba yếu tố cơ bản nào?", options: ["A. Dinh dưỡng, xem tivi giải trí và nghỉ ngơi.", "B. Ăn uống nhiều đồ ngọt, hạn chế vận động và ngủ nhiều.", "C. Dinh dưỡng, vận động cơ thể và nghỉ ngơi.", "D. Chỉ cần vận động cơ thể thật nhiều mà không cần nghỉ ngơi."], correct: 2 },
+                { id: 2, type: "choice", text: "Câu 2: Nhóm lương thực, thực phẩm nào chứa nhiều chất bột đường (glucid) giúp cung cấp năng lượng cho cơ thể?", options: ["A. Mỡ động vật và các loại dầu thực vật.", "B. Thịt đỏ, gan, sò, trứng và các sản phẩm từ sữa.", "C. Muối iốt, nước khoáng và nước hoa quả.", "D. Gạo, bột mì, khoai, ngô (bắp) và các loại củ."], correct: 3 },
+                { id: 3, type: "choice", text: "Câu 3: Thức ăn từ nguồn động vật như thịt, cá, sữa, trứng và thực phẩm từ thực vật như các loại đậu (đặc biệt là đậu tương, lạc, vừng) cung cấp chất dinh dưỡng thiết yếu nào?", options: ["A. Chất bột đường (glucid).", "B. Chất đạm (protein).", "C. Chỉ cung cấp nước để điều hòa thân nhiệt.", "D. Chỉ cung cấp muối iốt cho cơ thể."], correct: 1 },
+                { id: 4, type: "choice", text: "Câu 4: Luyện tập TDTT khiến cơ thể ra nhiều mồ hôi, dẫn đến mất nước và muối khoáng; nếu không được bổ sung kịp thời sẽ dẫn đến hiện tượng gì?", options: ["A. Một số nhóm cơ bị co cứng (chuột rút) hoặc cơ thể bị kiệt sức.", "B. Cơ thể tự tổng hợp được nhiều vitamin D hơn từ ánh sáng mặt trời.", "C. Giúp chuyển hóa glucid, protein, lipid nhanh hơn và ăn ngon miệng hơn.", "D. Giúp người tập đạt tốc độ tối đa nhanh hơn khi chạy cự li ngắn."], correct: 0 },
+                { id: 5, type: "choice", text: "Câu 5: Chế độ dinh dưỡng hợp lí trong quá trình luyện tập thể dục thể thao bao gồm những yêu cầu nào?", options: ["A. Nhịn ăn trước khi tập để cơ thể nhẹ nhàng và chỉ uống nước sau khi tập xong 3 giờ.", "B. Chỉ ăn các thức ăn giàu chất bột đường như cơm, khoai mà không cần ăn rau xanh hay thịt, cá.", "C. Ăn thật no ngay trước lúc chạy và hạn chế uống nước khoáng, nước hoa quả.", "D. Ăn đúng giờ, đúng bữa, ăn đầy đủ các chất dinh dưỡng; uống đủ nước (nước khoáng, nước hoa quả)."], correct: 3 },
+                { id: 6, type: "choice", text: "Câu 6: Kĩ thuật chạy cự li ngắn (60m) gồm 4 giai đoạn theo đúng thứ tự nào sau đây?", options: ["A. Xuất phát -> Chạy giữa quãng -> Chạy lao sau xuất phát -> Chạy về đích.", "B. Xuất phát -> Chạy lao sau xuất phát -> Chạy giữa quãng -> Chạy về đích.", "C. Chạy lao sau xuất phát -> Xuất phát -> Chạy giữa quãng -> Chạy về đích.", "D. Xuất phát -> Chạy lao sau xuất phát -> Chạy về đích -> Chạy giữa quãng."], correct: 1 },
+                { id: 7, type: "choice", text: "Câu 7: Trong kĩ thuật xuất phát cao, người chạy thực hiện theo 3 khẩu lệnh lần lượt là gì?", options: ["A. “Vào chỗ” – “Chuẩn bị” – “Chạy!”.", "B. “Sẵn sàng” – “Vào chỗ” – “Chạy!”.", "C. “Vào chỗ” – “Sẵn sàng” – “Chạy!”.", "D. “Chuẩn bị” – “Sẵn sàng” – “Bắt đầu!”."], correct: 2 },
+                { id: 8, type: "choice", text: "Câu 8: Một số điều luật trong thi đấu các môn chạy quy định như thế nào khi chuẩn bị xuất phát?", options: ["A. Được phép đặt mũi bàn chân trước đè lên vạch xuất phát để chạy cho nhanh.", "B. Được phép xuất phát ngay khi trọng tài vừa hô khẩu lệnh “Sẵn sàng”.", "C. Được phép đứng vượt lên phía trước vạch xuất phát từ 15 – 20 cm.", "D. Phải đứng phía sau vạch xuất phát, các bộ phận của cơ thể không được chạm vào vạch xuất phát và không xuất phát trước hiệu lệnh."], correct: 3 },
+                { id: 9, type: "choice", text: "Câu 9: Các động tác bổ trợ kĩ thuật chạy cự li ngắn bao gồm những động tác nào?", options: ["A. Động tác bước nhỏ, động tác nâng cao đùi, động tác đạp sau.", "B. Xoay khớp cổ, xoay khớp khuỷu tay, xoay khớp vai, xoay khớp hông.", "C. Xoay khớp gối, ép dọc, ép ngang và chạy tại chỗ.", "D. Bật nhảy tiếp sức, nhảy lò cò tiếp sức và bịt mắt bắt dê."], correct: 0 },
+                { id: 10, type: "choice", text: "Câu 10: Nhóm các trò chơi nào dưới đây là trò chơi phát triển sức nhanh?", options: ["A. Cờ vua, cờ tướng và kéo co.", "B. Chạy tiếp sức, Người thừa thứ ba, Bắt bóng nhanh, Đổi bóng nhanh trên đường dích dắc.", "C. Nhảy xa kiểu ngồi và nhảy cao kiểu bước qua.", "D. Chạy cự li trung bình trên đường vòng."], correct: 1 },
+                { id: 11, type: "choice", text: "Câu 11: Học sinh được tổ chức tập luyện kĩ thuật chạy cự li ngắn theo những hình thức nào?", options: ["A. Chỉ có hình thức tự tập một mình ở nhà.", "B. Chỉ có hình thức thi đấu giữa các khối lớp.", "C. Luyện tập cá nhân, luyện tập cặp đôi và luyện tập nhóm.", "D. Chỉ đứng quan sát giáo viên mà không thực hiện."], correct: 2 },
+                { id: 12, type: "choice", text: "Câu 12: Sau khi rời vị trí xuất phát, người chạy bước vào giai đoạn chạy lao sau xuất phát cần thực hiện kĩ thuật như thế nào?", options: ["A. Giảm dần tốc độ, thu ngắn bước chạy và chuyển sang đi bộ thả lỏng.", "B. Đứng thẳng người ngay từ bước đầu tiên và chạy chậm tại chỗ.", "C. Gập thân nhanh ra trước ở mọi bước chạy và dừng lại đột ngột.", "D. Duy trì độ ngả ra trước của thân trên, nỗ lực đạp mạnh chân kết hợp tăng dần tốc độ và độ dài bước chạy."], correct: 3 },
+                { id: 13, type: "choice", text: "Câu 13: Khi thực hiện động tác bổ trợ nâng cao đùi, tư thế chân của người tập được mô tả như thế nào?", options: ["A. Đứng thẳng trên chân phải, chạm đất bằng cả bàn chân, chân trái chỉ nâng cao gót.", "B. Đứng thẳng trên chân phải, chạm đất bằng nửa trước bàn chân, đùi chân trái nâng gần như vuông góc với thân người (cẳng chân hướng đất), luân phiên đổi chân kết hợp di chuyển.", "C. Hai chân luôn giữ thẳng khớp gối và bật nhảy chụm cả hai chân.", "D. Chân trước khuỵu gối đứng yên, chân sau đặt cách gót chân trước 15 – 20 cm."], correct: 1 },
+                { id: 14, type: "choice", text: "Câu 14: Cách thở trong luyện tập chạy cự li ngắn được thực hiện như thế nào là đúng?", options: ["A. Trong khi chạy: Nín thở hoàn toàn; Sau khi chạy: Thở nhanh bằng miệng.", "B. Trong khi chạy: Chỉ hít thở nhẹ bằng mũi; Sau khi chạy: Bịt mũi và nín thở.", "C. Trong khi chạy: Hít vào, thở ra nhanh, mạnh bằng cả mũi và miệng; Sau khi chạy: Hít thở sâu, kết hợp thả lỏng.", "D. Trong khi chạy: Chỉ thở ra mà không hít vào."], correct: 2 },
+                { id: 15, type: "choice", text: "Câu 15: Để đảm bảo an toàn sau khi vượt qua vạch đích ở tốc độ cao, người chạy cần thực hiện hoạt động sau khi về đích như thế nào?", options: ["A. Không dừng lại đột ngột, chạy chậm dần chuyển thành đi bộ và kết hợp thả lỏng.", "B. Dừng lại thật đột ngột ngay trên vạch đích để giữ thành tích.", "C. Ngồi hoặc nằm ngay xuống mặt đường chạy.", "D. Quay ngược đầu lại và chạy nhanh ngược chiều."], correct: 0 },
+                { id: 16, type: "true_false", text: "Câu 16: Ở khẩu lệnh “Sẵn sàng” trong kĩ thuật xuất phát cao, người chạy khuỵu hai gối, thân trên hơi ngả ra trước; chân trước chạm đất bằng nửa trước bàn chân, chân sau kiễng gót.", correct: "Đúng" },
+                { id: 17, type: "true_false", text: "Câu 17: Trong thi đấu các môn chạy, vận động viên được coi là đã về đích ngay khi bàn tay, bàn chân hoặc phần đầu của họ chạm tới mặt phẳng thẳng đứng của vạch đích.", correct: "Sai" },
+                { id: 18, type: "true_false", text: "Câu 18: Trước khi luyện tập chạy cự li ngắn, học sinh không cần thực hiện khởi động xoay các khớp mà có thể chạy nhanh tối đa ngay lập tức.", correct: "Sai" },
+                { id: 19, type: "true_false", text: "Câu 19: Giai đoạn chạy giữa quãng là một trong bốn giai đoạn của chạy cự li ngắn và có vai trò là giai đoạn duy trì tốc độ cao nhất đã đạt được sau khi xuất phát và chạy lao.", correct: "Đúng" },
+                { id: 20, type: "true_false", text: "Câu 20: Trong giờ học TDTT, những học sinh hạn chế về vận động vẫn có thể tham gia học tập bằng cách luân phiên hô khẩu lệnh, chỉ huy nhóm, quan sát và đánh giá kết quả của bạn.", correct: "Đúng" }
+            ],
+            "GK1": [
+                { id: 1, type: "choice", text: "Câu 1: Các loại vitamin nhóm B (B1, B2, B6, B12, PP) có vai trò và ảnh hưởng như thế nào đối với sự phát triển thể chất của cơ thể?", options: ["A. Là thành phần chủ yếu của cơ thể và điều hoà thân nhiệt.", "B. Được cơ thể tự tổng hợp từ ánh sáng mặt trời.", "C. Cần thiết cho sự chuyển hoá glucid, protein, lipid trong cơ thể, giúp phát triển bình thường và ăn ngon miệng.", "D. Là nguồn nguyên liệu chỉ có trong mỡ động vật và dầu thực vật."], correct: 2 },
+                { id: 2, type: "choice", text: "Câu 2: Khi xây dựng bữa ăn phục vụ luyện tập TDTT, nhóm 'gan, mỡ, cá, lòng đỏ trứng, đu đủ, xoài' bổ sung nhiều vitamin A; còn nhóm 'cá trích, cá thu, cá hồi, cá ngừ' bổ sung chủ yếu vitamin nào?", options: ["A. Vitamin C.", "B. Vitamin E.", "C. Vitamin K.", "D. Vitamin D."], correct: 3 },
+                { id: 3, type: "choice", text: "Câu 3: Trong khẩu phần ăn hằng ngày của người tập TDTT, bên cạnh sản phẩm từ sữa, tôm, cua, cá cung cấp canxi và phốt pho, việc bổ sung thêm 'thịt, tim, gan, đậu, rau xanh' có tác dụng cung cấp khoáng chất thiết yếu nào?", options: ["A. Khoáng chất kẽm.", "B. Khoáng chất sắt.", "C. Khoáng chất iốt.", "D. Chất bột đường (glucid)."], correct: 1 },
+                { id: 4, type: "choice", text: "Câu 4: Chất đạm (protein) có nguồn gốc từ đâu?", options: ["A. Chỉ có trong thức ăn từ nguồn động vật (thịt, cá, sữa, trứng).", "B. Chỉ có trong gạo, bột mì và khoai.", "C. Có ở cả nguồn động vật và nguồn thực vật như các loại đậu, đặc biệt là đậu tương, lạc, vừng.", "D. Chỉ có trong mỡ động vật và dầu thực vật."], correct: 2 },
+                { id: 5, type: "choice", text: "Câu 5: Trong buổi tập chạy cự li ngắn, cơ thể ra nhiều mồ hôi làm mất nước và muối khoáng nhưng học sinh nhịn uống nước sẽ dẫn đến hậu quả gì?", options: ["A. Giúp các nhóm cơ chân co duỗi nhanh hơn.", "B. Tăng thân nhiệt tạm thời nhưng chuyển hóa chất béo nhanh hơn.", "C. Một số nhóm cơ bị co cứng (chuột rút) hoặc cơ thể bị kiệt sức; cần ăn đúng bữa, đủ chất và uống đủ nước.", "D. Thiếu hụt vitamin K ngay lập tức."], correct: 2 },
+                { id: 6, type: "choice", text: "Câu 6: Cả 'động tác bước nhỏ' và 'động tác nâng cao đùi' đều bắt đầu từ tư thế chuẩn bị đứng hai chân hẹp hơn vai, hai tay co tự nhiên. Điểm khác biệt cơ bản là gì?", options: ["A. Bước nhỏ chạm đất bằng cả bàn chân, chân kia nâng cao gót; nâng cao đùi chạm đất bằng nửa trước bàn chân, đùi nâng gần vuông góc.", "B. Bước nhỏ chạm đất bằng nửa trước bàn chân; nâng cao đùi chạm đất bằng cả bàn chân.", "C. Cả hai động tác đều chạm đất bằng gót chân.", "D. Cả hai động tác đều giữ chân đứng yên không đổi."], correct: 0 },
+                { id: 7, type: "choice", text: "Câu 7: Khi thực hiện 'động tác đạp sau' (chân trái trước, chân phải sau), hoạt động phối hợp diễn ra như thế nào?", options: ["A. Giữ thân người thẳng đứng, hai tay cố định.", "B. Ngả thân ra trước; chân phải đưa ra trước tiếp đất bằng nửa trước bàn chân, chân trái đạp mạnh duỗi thẳng khớp gối và cổ chân đưa cơ thể rời mặt đất.", "C. Gập thân nhanh ra trước như khi về đích.", "D. Bật nhảy chụm hai chân liên tục."], correct: 1 },
+                { id: 8, type: "choice", text: "Câu 8: Trong giai đoạn 'chạy giữa quãng', để duy trì tốc độ cao nhất, tư thế thân người và động tác thực hiện ra sao?", options: ["A. Thân trên hơi ngả ra trước, đầu thẳng, mắt nhìn phía trước; chân khi ở phía trước tích cực đưa đùi lên trên, ra trước và chạm đất bằng nửa trước bàn chân, chân sau đạp mạnh.", "B. Thân trên ngả ra sau, vung tay song song.", "C. Gập thân hoàn toàn suốt cự li 50m.", "D. Đi bộ chậm giữ sức."], correct: 0 },
+                { id: 9, type: "choice", text: "Câu 9: Khi luyện tập kĩ thuật 'xuất phát cao' theo cặp đôi, sự khác biệt giữa khẩu lệnh 'Vào chỗ' và 'Sẵn sàng' là gì?", options: ["A. 'Vào chỗ' chỉ bước đặt chân thuận sát mép sau vạch, chân sau cách 15-20cm; 'Sẵn sàng' mới khuỵu hai gối, ngả thân trên ra trước, tay khác bên đưa trước.", "B. 'Vào chỗ' là khuỵu gối chạy luôn.", "C. Cả hai khẩu lệnh đều đứng thẳng.", "D. Cả hai khẩu lệnh đều đạp chân xuất phát."], correct: 0 },
+                { id: 10, type: "choice", text: "Câu 10: Trong giai đoạn 'chạy lao sau xuất phát', người chạy cần phối hợp thế nào?", options: ["A. Giảm ngay tốc độ sau khi xuất phát.", "B. Đứng thẳng người từ bước đầu tiên.", "C. Duy trì độ ngả ra trước của thân trên, nỗ lực đạp mạnh chân kết hợp tăng dần tốc độ và độ dài bước chạy; giảm dần độ ngả thân trên theo tốc độ.", "D. Giữ nguyên một tốc độ chậm."], correct: 2 },
+                { id: 11, type: "choice", text: "Câu 11: Phát biểu nào nêu đúng vai trò của 4 giai đoạn kĩ thuật chạy cự li ngắn (60m)?", options: ["A. Xuất phát giúp đạt tốc độ tối đa; chạy lao tăng dần tốc độ và độ dài bước; chạy giữa quãng duy trì tốc độ cao nhất; chạy về đích duy trì tốc độ và gập thân nhanh ra trước ở bước cuối.", "B. Xuất phát là chạy chậm; chạy về đích là tăng tốc đột ngột từ đầu.", "C. Cả 4 giai đoạn đều giống hệt nhau.", "D. Không cần quan tâm đến các giai đoạn."], correct: 0 },
+                { id: 12, type: "choice", text: "Câu 12: Tại sao ở bước chạy cuối cùng của giai đoạn 'chạy về đích', người chạy lại thực hiện động tác 'gập thân nhanh ra trước' khi vượt qua vạch đích?", options: ["A. Để chạm tay xuống đất.", "B. Để dừng lại đột ngột ngay lập tức.", "C. Để thân người chạm tới mặt phẳng thẳng đứng của vạch đích sớm nhất theo đúng điều luật.", "D. Để chào khán giả."], correct: 2 },
+                { id: 13, type: "choice", text: "Câu 13: Quy trình đảm bảo an toàn trong suốt buổi tập chạy cự li ngắn bao gồm những gì?", options: ["A. Trước khi tập khởi động chung và chuyên môn; trong khi chạy thở bằng cả mũi và miệng; sau khi chạy không dừng đột ngột mà chạy chậm dần chuyển thành đi bộ, thả lỏng.", "B. Không cần khởi động, chạy hết sức ngay; nín thở khi chạy; dừng đột ngột sau khi về đích.", "C. Chỉ ngồi xem bạn tập.", "D. Chỉ uống nước ngọt có ga."], correct: 0 },
+                { id: 14, type: "choice", text: "Câu 14: Khi học sinh hạn chế vận động tham gia điều khiển nhóm tập luyện các động tác bổ trợ và phối hợp giai đoạn chạy, cần tổ chức thế nào?", options: ["A. Tập từ chậm đến nhanh, từ tại chỗ đến di chuyển; tập xuất phát cao và chạy lao trước rồi đến chạy giữa quãng và về đích; quan sát đánh giá bạn.", "B. Bắt buộc phải chạy 100m tốc độ cao ngay lập tức.", "C. Không được giao nhiệm vụ gì.", "D. Tự do chạy lung tung."], correct: 0 },
+                { id: 15, type: "choice", text: "Câu 15: Trong các trò chơi vận động phát triển sức nhanh (Chạy tiếp sức, Đổi bóng nhanh dích dắc...), trường hợp nào thực hiện ĐÚNG quy định?", options: ["A. Bạn tiếp theo trong hàng chỉ xuất phát khi bạn thực hiện trước đã chạy về đến vạch xuất phát (hoặc đặt bóng về vị trí số 1).", "B. Xuất phát bất cứ lúc nào thích.", "C. Chạy ra ngoài vòng tròn quy định.", "D. Không cần tung bóng theo thứ tự."], correct: 0 },
+                { id: 16, type: "true_false", text: "Câu 16: Khi luyện tập cá nhân động tác đạp sau, người tập đứng chống hai tay vào tường để hai chân luân phiên thực hiện động tác từng nhịp và tăng dần tốc độ.", correct: "Đúng" },
+                { id: 17, type: "true_false", text: "Câu 17: Ở khẩu lệnh 'Sẵn sàng' trong xuất phát cao, nếu đặt chân thuận là chân trái ở trước thì phải đưa tay trái ra phía trước.", correct: "Sai" },
+                { id: 18, type: "true_false", text: "Câu 18: Trong các giai đoạn của chạy cự li ngắn, giai đoạn tiếp ngay sau chạy lao nhằm duy trì tốc độ cao nhất đã đạt được gọi là 'chạy giữa quãng'.", correct: "Đúng" },
+                { id: 19, type: "true_false", text: "Câu 19: Sau khi vượt qua vạch đích ở tốc độ cao, người chạy cần dừng lại đột ngột ngay lập tức để giữ thành tích.", correct: "Sai" },
+                { id: 20, type: "true_false", text: "Câu 20: Khi quan sát bạn thực hiện các động tác bổ trợ và chạy giữa quãng, nếu thấy bạn tiếp đất bằng cả bàn chân làm giảm tốc độ, cần nhắc bạn sửa lại để tiếp đất bằng nửa trước bàn chân.", correct: "Đúng" }
+            ]
+        };
 
         function renderQuestionsTable() {
+            const period = document.getElementById('bankPeriodSelect').value;
+            const questions = EXAM_DATA[period] || [];
             const tbody = document.getElementById('questionsTableBody');
-            tbody.innerHTML = EXAM_QUESTIONS.map((q, index) => {
+            
+            tbody.innerHTML = questions.map((q, index) => {
                 const tag = q.type === 'choice' 
                     ? `<span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-bold">Trắc nghiệm</span>`
                     : `<span class="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded font-bold">Đúng / Sai</span>`;
                 
-                const answerText = q.type === 'choice' ? q.options[q.correct] : `Đáp án: ${q.correct}`;
+                let answerText = "";
+                if (q.type === 'choice') {
+                    answerText = q.options[q.correct];
+                } else {
+                    answerText = `Đáp án: ${q.correct}`;
+                }
 
                 return `
                     <tr class="hover:bg-slate-50 border-b">
@@ -273,14 +329,16 @@
             const tbody = document.getElementById('submissionTableBody');
             tbody.innerHTML = subs.length === 0 ? `<tr><td colspan="7" class="text-center py-6 text-slate-400">Chưa có bài nộp nào cho khối và đợt thi này.</td></tr>` : '';
             subs.forEach(sub => {
+                const startedStr = sub.startedAt ? new Date(sub.startedAt).toLocaleTimeString('vi-VN') : 'N/A';
+                const submittedStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleTimeString('vi-VN') : 'N/A';
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b">
                         <td class="p-3 font-semibold">${sub.studentName}</td>
                         <td class="p-3"><span class="bg-slate-100 text-xs px-2 py-0.5 rounded font-bold">${sub.className}</span></td>
                         <td class="p-3">Khối ${sub.grade || '6'}</td>
-                        <td class="p-3 text-xs text-slate-500">${new Date(sub.submittedAt).toLocaleString('vi-VN')}</td>
+                        <td class="p-3 text-xs text-slate-600 font-medium">${startedStr}</td>
+                        <td class="p-3 text-xs text-slate-600 font-medium">${submittedStr}</td>
                         <td class="p-3 font-bold text-indigo-700 text-base">${sub.totalScore ?? 0} đ</td>
-                        <td class="p-3"><span class="text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800">Đã hoàn tất</span></td>
                         <td class="p-3 text-right"><button onclick="openModal('${sub.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded-lg font-semibold">Xem Chi Tiết</button></td>
                     </tr>`;
             });
@@ -290,21 +348,31 @@
             const grade = document.getElementById('controlGrade').value;
             const period = document.getElementById('controlPeriod').value;
 
+            const now = new Date();
+            const closesAt = new Date(now.getTime() + 45 * 60000); // Tự động tính 45 phút
+
             await window.fsTools.setDoc(window.fsTools.doc(window.db, "config", "exam_status"), { 
                 isOpen: isOpen,
                 grade: grade,
-                period: period
+                period: period,
+                startedAt: now.toISOString(),
+                closesAt: closesAt.toISOString()
             });
-            alert(isOpen ? `Đã MỞ kì thi cho [Khối ${grade} - ${period}]!` : "Đã ĐÓNG toàn bộ cổng thi!");
+            alert(isOpen ? `Đã MỞ kì thi cho [Khối ${grade} - Đợt: ${period}]! Hệ thống sẽ tự động đóng sau 45 phút (vào lúc ${closesAt.toLocaleTimeString('vi-VN')}).` : "Đã ĐÓNG toàn bộ cổng thi!");
         }
 
         function openModal(subId) {
             const sub = window.currentSubmissions.find(s => s.id === subId);
             if (!sub) return;
 
-            document.getElementById('modalStudentTitle').innerText = `Chi Tiết Bài Làm: ${sub.studentName} - Lớp ${sub.className}`;
+            document.getElementById('modalStudentTitle').innerText = `Chi Tiết Bài Làm: ${sub.studentName} - Lớp ${sub.className} (${sub.examPeriod || 'KTTX Lần 1'})`;
             const container = document.getElementById('modalContent');
-            container.innerHTML = '';
+            container.innerHTML = `
+                <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs text-indigo-900 font-semibold flex justify-between">
+                    <span>Bắt đầu làm: ${sub.startedAt ? new Date(sub.startedAt).toLocaleString('vi-VN') : 'N/A'}</span>
+                    <span>Thời gian nộp: ${sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('vi-VN') : 'N/A'}</span>
+                </div>
+            `;
 
             sub.answers.forEach((ans, idx) => {
                 container.innerHTML += `
@@ -331,6 +399,10 @@
             document.getElementById('gradingTab').classList.toggle('hidden', tab !== 'grading');
             document.getElementById('questionsTab').classList.toggle('hidden', tab !== 'questions');
             document.getElementById('controlTab').classList.toggle('hidden', tab !== 'control');
+            
+            document.getElementById('tabGradingBtn').className = tab === 'grading' ? 'bg-indigo-800 px-4 py-2 rounded-lg text-sm font-semibold' : 'bg-indigo-600/50 px-4 py-2 rounded-lg text-sm font-semibold';
+            document.getElementById('tabQuestionsBtn').className = tab === 'questions' ? 'bg-indigo-800 px-4 py-2 rounded-lg text-sm font-semibold' : 'bg-indigo-600/50 px-4 py-2 rounded-lg text-sm font-semibold';
+            document.getElementById('tabControlBtn').className = tab === 'control' ? 'bg-indigo-800 px-4 py-2 rounded-lg text-sm font-semibold' : 'bg-indigo-600/50 px-4 py-2 rounded-lg text-sm font-semibold';
         }
     </script>
 </body>
